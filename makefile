@@ -12,15 +12,19 @@ OPTIMIZATION_FLAGS = -O3 -march=native -g
 
 all: libladspam-0.so ladspam-0-test
 
-libladspam-0.so: ladspam-0/m_jack.cc ladspam-0/m_jack.h
-	g++ $(OPTIMIZATION_FLAGS) -I . -fPIC -shared -o libladspam-0.so ladspam-0/m_jack.cc `pkg-config jack ladspamm-0 --cflags --libs`
+LADSPAM_HEADERS = ladspam-0/synth.h ladspam-0/jack/synth.h ladspam-0/jack/instrument.h
+
+LADSPAM_SOURCES = ladspam-0/jack/synth.cc ladspam-0/jack/instrument.cc
+
+libladspam-0.so: $(LADSPAM_HEADERS) $(LADSPAM_SOURCES)
+	g++ $(OPTIMIZATION_FLAGS) -I . -fPIC -shared -o libladspam-0.so $(LADSPAM_SOURCES) `pkg-config jack ladspamm-0 --cflags --libs`
 
 install: all
 	$(INSTALL) -d $(PKGCONFIG_DIR)
 	$(INSTALL) ladspam-0.pc $(PKGCONFIG_DIR)/
 	$(SED) -i -e s@PREFIX@$(PREFIX)@g $(PKGCONFIG_DIR)/ladspam-0.pc 
 	$(INSTALL) -d $(INCLUDE_PATH)
-	$(INSTALL) ladspam-0/*.h $(INCLUDE_PATH)
+	$(INSTALL) $(LADSPAM_HEADERS) $(INCLUDE_PATH)
 	$(INSTALL) libladspam-0.so $(PREFIX)/lib/
 
 ladspam-0-test: test_ladspam.cc libladspam-0.so

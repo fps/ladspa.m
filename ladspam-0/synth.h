@@ -6,12 +6,18 @@
 
 namespace ladspam
 {
-	/* 
-		m like modular...
+	/*
+		The one unique interface.. Subclasses for
+		special implementations might offer yet more
+		derived types, e.g. ladspam::jack::instrument.
+		
+		Subclasses for special implementations also 
+		offer unique ways to expose some or all unconnected
+		plugin ports to the "outside", e.g. ladspam::jack::synth.
 	*/
-	struct m 
+	struct synth 
 	{
-		virtual ~m()
+		virtual ~synth()
 		{
 
 		}
