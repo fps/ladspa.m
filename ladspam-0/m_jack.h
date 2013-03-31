@@ -33,8 +33,9 @@ namespace ladspam
 	*/
 	struct m_jack : m 
 	{
-		m_jack(const std::string &client_name) :
+		m_jack(const std::string &client_name, unsigned control_period) :
 			m_jack_client(jack_client_open(client_name.c_str(), JackUseExactName, 0)),
+			m_control_period(control_period),
 			m_plugin_counter(0),
 			m_active(true),
 			m_port_value_commands(1024),
@@ -51,6 +52,10 @@ namespace ladspam
 				throw std::runtime_error("Failed to set jack process callback");
 			}
 		
+			if (0 != jack_get_buffer_size(m_jack_client) % m_control_period)
+			{
+				throw std::runtime_error("control period must be a divider of buffer size");
+			}
 			jack_activate(m_jack_client);
 		}
 
@@ -104,7 +109,7 @@ namespace ladspam
 		)
 		{
 			ladspamm::plugin_instance_ptr instance = load_ladspa_plugin(library, label);
-			plugin_ptr the_plugin(new plugin(instance, m_jack_client, m_plugin_counter++));
+			plugin_ptr the_plugin(new plugin(instance, m_jack_client, m_plugin_counter++, m_control_period));
 
 			
 			set_active(false);
@@ -162,13 +167,19 @@ namespace ladspam
 			return true;
 		}
 
-		inline void process_plugin(jack_nframes_t nframes, unsigned plugin_index)
+		inline void process_plugin
+		(
+			jack_nframes_t nframes, 
+			unsigned plugin_index, 
+			unsigned control_period,
+			unsigned number_of_chunks
+		)
 		{
 			plugin_ptr &p = m_plugins[plugin_index];
 			
 			ladspamm::plugin_instance &instance = *(p->m_plugin_instance);
 			
-			for (unsigned frame_index = 0; frame_index < nframes; ++frame_index)
+			for (unsigned chunk_index = 0; chunk_index < number_of_chunks; ++chunk_index)
 			{
 				for 
 				(
@@ -179,27 +190,64 @@ namespace ladspam
 				{
 					if (0 == jack_port_connected(p->m_jack_ports[port_index]))
 					{
-						instance.connect_port(port_index, &p->m_port_values[port_index]);
+						instance.connect_port(port_index, &p->m_port_values[port_index][0]);
 					}
 					else
 					{
 						instance.connect_port
 						(
 							port_index, 
-							((float*)jack_port_get_buffer(p->m_jack_ports[port_index], nframes)) + frame_index
+							((float*)jack_port_get_buffer(p->m_jack_ports[port_index], nframes)) + (chunk_index * control_period)
 						);
 					}
 					
-					instance.run(1);
 				}
+				
+				instance.run(control_period);
+#if 0
+				for 
+				(
+					unsigned frame_index = chunk_index * control_period, 
+					frame_index_max = (chunk_index + 1) * control_period; 
+					frame_index < frame_index_max; 
+					++frame_index
+				)
+				{
+					for 
+					(
+						unsigned port_index = 0, port_index_max = instance.the_plugin->port_count(); 
+						port_index < port_index_max; 
+						++port_index
+					)
+					{
+						if (0 == jack_port_connected(p->m_jack_ports[port_index]))
+						{
+							instance.connect_port(port_index, &p->m_port_values[port_index]);
+						}
+						else
+						{
+							instance.connect_port
+							(
+								port_index, 
+								((float*)jack_port_get_buffer(p->m_jack_ports[port_index], nframes)) + frame_index
+							);
+						}
+						
+						instance.run(1);
+					}
+				}
+#endif
 			}
 		}
 		
 		inline void process_active(jack_nframes_t nframes)
 		{
+			unsigned control_period = std::min(jack_get_buffer_size(m_jack_client), m_control_period);
+			unsigned number_of_chunks = jack_get_buffer_size(m_jack_client) / control_period;
+
 			for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
 			{
-				process_plugin(nframes, plugin_index);
+				process_plugin(nframes, plugin_index, control_period, number_of_chunks);
 			}
 		}
 		
@@ -210,7 +258,7 @@ namespace ladspam
 				while (true == m_port_value_commands.can_read())
 				{
 					set_port_value_command command = m_port_value_commands.read();
-					m_plugins[command.m_plugin_index]->m_port_values[command.m_port_index] = command.m_value;
+					m_plugins[command.m_plugin_index]->m_port_values[command.m_port_index][0] = command.m_value;
 				}
 				
 				process_active(nframes);
@@ -228,6 +276,8 @@ namespace ladspam
 		protected:
 			jack_client_t *m_jack_client;
 
+			unsigned m_control_period;
+			
 			unsigned m_plugin_counter;
 
 			bool m_active;
@@ -249,14 +299,15 @@ namespace ladspam
 			{
 				ladspamm::plugin_instance_ptr m_plugin_instance;
 				std::vector<jack_port_t *> m_jack_ports;
-				std::vector<float> m_port_values;
+				std::vector<std::vector<float> > m_port_values;
 				jack_client_t *m_jack_client;
 				
 				plugin
 				(
 					ladspamm::plugin_instance_ptr plugin_instance,
 					jack_client_t *jack_client,
-					unsigned plugin_counter
+					unsigned plugin_counter,
+					unsigned control_period
 				) :
 					m_plugin_instance(plugin_instance),
 					m_jack_client(jack_client)
@@ -267,16 +318,20 @@ namespace ladspam
 					{
 						unsigned long port_flags = 0;
 
+						std::vector<float> port_values;
+						port_values.resize(control_period);
+
 						if (plugin->port_is_input(index))
 						{
 							port_flags |= JackPortIsInput;
-							m_port_values.push_back(m_plugin_instance->port_default_guessed(index));
+							port_values[0] = m_plugin_instance->port_default_guessed(index);
+							m_port_values.push_back(port_values);
 						}
 						
 						if (plugin->port_is_output(index))
 						{
 							port_flags |= JackPortIsOutput;
-							m_port_values.push_back(0);
+							m_port_values.push_back(port_values);
 						}
 						
 						std::stringstream port_name_stream;

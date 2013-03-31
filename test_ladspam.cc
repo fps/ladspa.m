@@ -4,7 +4,7 @@
 
 int main()
 {
-	ladspam::m_jack m1("m1");
+	ladspam::m_jack m1("m1", 8);
 	m1.insert_plugin(0, "/usr/lib/ladspa/flanger_1191.so", "flanger");
 #if 0
 	m1.insert_plugin(0, "/usr/lib/ladspa/amp.so", "amp_mono");
