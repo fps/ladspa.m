@@ -292,8 +292,6 @@ namespace ladspam
 						
 						m_port_values.push_back(port_values);
 						
-						std::cout << m_port_values[m_port_values.size()-1].size() << std::endl;
-						
 						std::stringstream port_name_stream;
 						
 						port_name_stream 
