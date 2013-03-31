@@ -12,7 +12,9 @@ OPTIMIZATION_FLAGS = -O3 -march=native -g
 
 all: libladspam-0.so ladspam-0-test
 
-LADSPAM_HEADERS = ladspam-0/synth.h ladspam-0/jack/synth.h ladspam-0/jack/instrument.h
+LADSPAM_HEADERS = ladspam-0/synth.h 
+LADSPAM_PRIVATE_HEADERS = ladspam-0/private/ringbuffer.h
+LADSPAM_JACK_HEADERS = ladspam-0/jack/synth.h ladspam-0/jack/instrument.h
 
 LADSPAM_SOURCES = ladspam-0/jack/synth.cc ladspam-0/jack/instrument.cc
 
@@ -24,7 +26,11 @@ install: all
 	$(INSTALL) ladspam-0.pc $(PKGCONFIG_DIR)/
 	$(SED) -i -e s@PREFIX@$(PREFIX)@g $(PKGCONFIG_DIR)/ladspam-0.pc 
 	$(INSTALL) -d $(INCLUDE_PATH)
+	$(INSTALL) -d $(INCLUDE_PATH)/jack
+	$(INSTALL) -d $(INCLUDE_PATH)/private
 	$(INSTALL) $(LADSPAM_HEADERS) $(INCLUDE_PATH)
+	$(INSTALL) $(LADSPAM_JACK_HEADERS) $(INCLUDE_PATH)/jack
+	$(INSTALL) $(LADSPAM_PRIVATE_HEADERS) $(INCLUDE_PATH)/private
 	$(INSTALL) libladspam-0.so $(PREFIX)/lib/
 
 ladspam-0-test: test_ladspam.cc libladspam-0.so
