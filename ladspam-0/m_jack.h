@@ -15,6 +15,9 @@
 #include <ladspam-0/ringbuffer.h>
 
 #include <stdexcept>
+#include <string>
+#include <vector>
+#include <sstream>
 
 namespace ladspam
 {
@@ -30,6 +33,7 @@ namespace ladspam
 	{
 		m_jack(const std::string &client_name) :
 			m_jack_client(jack_client_open(client_name.c_str(), JackUseExactName, 0)),
+			m_plugin_counter(0),
 			m_active(true),
 			m_port_value_commands(1024),
 			m_activation_commands(1024),
@@ -71,9 +75,9 @@ namespace ladspam
 			const std::string& label
 		)
 		{
-			plugin the_plugin;
+			ladspamm::plugin_instance_ptr instance = load_ladspa_plugin(library, label);
+			plugin the_plugin(instance, m_jack_client, m_plugin_counter++);
 
-			the_plugin.m_plugin_instance = load_ladspa_plugin(library, label);
 			
 			set_active(false);
 			{
@@ -127,9 +131,45 @@ namespace ladspam
 			return true;
 		}
 
-		void process_active(jack_nframes_t nframes)
+		inline void process_plugin(jack_nframes_t nframes, unsigned plugin_index)
 		{
+			plugin &p = m_plugins[plugin_index];
 			
+			ladspamm::plugin_instance_ptr &instance = p.m_plugin_instance;
+			
+			for (unsigned frame_index = 0; frame_index < nframes; ++frame_index)
+			{
+				for 
+				(
+					unsigned port_index = 0, port_index_max = instance->the_plugin->port_count(); 
+					port_index < port_index_max; 
+					++port_index
+				)
+				{
+					if (0 == jack_port_connected(p.m_jack_ports[port_index]))
+					{
+						instance->connect_port(port_index, &p.m_port_values[port_index]);
+					}
+					else
+					{
+						instance->connect_port
+						(
+							port_index, 
+							((float*)jack_port_get_buffer(p.m_jack_ports[port_index], nframes)) + frame_index
+						);
+					}
+					
+					instance->run(1);
+				}
+			}
+		}
+		
+		inline void process_active(jack_nframes_t nframes)
+		{
+			for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
+			{
+				process_plugin(nframes, plugin_index);
+			}
 		}
 		
 		int process(jack_nframes_t nframes)
@@ -157,6 +197,7 @@ namespace ladspam
 		protected:
 			jack_client_t *m_jack_client;
 
+			unsigned m_plugin_counter;
 
 			bool m_active;
 
@@ -178,6 +219,55 @@ namespace ladspam
 				ladspamm::plugin_instance_ptr m_plugin_instance;
 				std::vector<jack_port_t *> m_jack_ports;
 				std::vector<float> m_port_values;
+				jack_client_t *m_jack_client;
+				
+				plugin
+				(
+					ladspamm::plugin_instance_ptr plugin_instance,
+					jack_client_t *jack_client,
+					unsigned plugin_counter
+				) :
+					m_plugin_instance(plugin_instance),
+					m_jack_client(jack_client)
+				{
+					ladspamm::plugin_ptr plugin = m_plugin_instance->the_plugin;
+					
+					for (unsigned index = 0; index < plugin->port_count(); ++index)
+					{
+						unsigned long port_flags = 0;
+
+						if (plugin->port_is_input(index))
+						{
+							port_flags |= JackPortIsInput;
+							m_port_values.push_back(m_plugin_instance->port_default_guessed(index));
+						}
+						
+						if (plugin->port_is_output(index))
+						{
+							port_flags |= JackPortIsOutput;
+							m_port_values.push_back(0);
+						}
+						
+						std::stringstream port_name_stream;
+						port_name_stream << plugin_counter << "-" << plugin->label() << "-" << plugin->port_name(index);
+						
+						jack_port_t *port = jack_port_register
+						(
+							m_jack_client,
+							port_name_stream.str().c_str(),
+							JACK_DEFAULT_AUDIO_TYPE,
+							port_flags,
+							0
+						);
+						
+						if (NULL == port)
+						{
+							throw std::runtime_error("Failed to register port");
+						}
+						
+						m_jack_ports.push_back(port);
+					}
+				}
 			};
 
 			/*
