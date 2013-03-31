@@ -25,8 +25,6 @@ int main()
 	i1.append_plugin("/usr/lib/ladspa/amp.so", "amp_mono");
 	i1.connect(0, 5, 1, 0);
 
-	usleep(10000000);
-
 	m1.disconnect(0, 5, 1, 0);
 
 	m1.insert_plugin(0, "/usr/lib/ladspa/flanger_1191.so", "flanger");

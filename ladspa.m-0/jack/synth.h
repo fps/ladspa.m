@@ -43,8 +43,8 @@ namespace ladspam
 					remove_plugin(0);
 				}
 				
-				jack_deactivate(synth_client);
-				jack_client_close(synth_client);
+				jack_deactivate(m_jack_client);
+				jack_client_close(m_jack_client);
 			}
 
 			virtual unsigned number_of_plugins() const
@@ -71,7 +71,7 @@ namespace ladspam
 			)
 			{
 				ladspamm::plugin_instance_ptr instance = load_ladspa_plugin(library, label);
-				plugin_ptr the_plugin(new plugin(instance, synth_client, m_plugin_counter++, m_control_period));
+				plugin_ptr the_plugin(new plugin(instance, m_jack_client, m_plugin_counter++, m_control_period));
 
 				
 				set_active(false);
@@ -93,7 +93,7 @@ namespace ladspam
 			{
 				jack_connect
 				(
-					synth_client, 
+					m_jack_client, 
 					jack_port_name(m_plugins[source_plugin_index]->synth_ports[source_port_index]),
 					jack_port_name(m_plugins[sink_plugin_index]->synth_ports[sink_port_index])
 				);
@@ -109,7 +109,7 @@ namespace ladspam
 			{
 				jack_disconnect
 				(
-					synth_client, 
+					m_jack_client, 
 					jack_port_name(m_plugins[source_plugin_index]->synth_ports[source_port_index]),
 					jack_port_name(m_plugins[sink_plugin_index]->synth_ports[sink_port_index])
 				);
@@ -180,8 +180,8 @@ namespace ladspam
 			
 			inline void process_active(jack_nframes_t nframes)
 			{
-				unsigned control_period = std::min(jack_get_buffer_size(synth_client), m_control_period);
-				unsigned number_of_chunks = jack_get_buffer_size(synth_client) / control_period;
+				unsigned control_period = std::min(jack_get_buffer_size(m_jack_client), m_control_period);
+				unsigned number_of_chunks = jack_get_buffer_size(m_jack_client) / control_period;
 
 				for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
 				{
@@ -215,7 +215,7 @@ namespace ladspam
 			}
 			
 			protected:
-				jack_client_t *synth_client;
+				jack_client_t *m_jack_client;
 
 				unsigned m_control_period;
 				
@@ -241,7 +241,7 @@ namespace ladspam
 					ladspamm::plugin_instance_ptr m_plugin_instance;
 					std::vector<jack_port_t *> synth_ports;
 					std::vector<std::vector<float> > m_port_values;
-					jack_client_t *synth_client;
+					jack_client_t *m_jack_client;
 					
 					plugin
 					(
@@ -251,7 +251,7 @@ namespace ladspam
 						unsigned control_period
 					) :
 						m_plugin_instance(plugin_instance),
-						synth_client(jack_client)
+						m_jack_client(jack_client)
 					{
 						ladspamm::plugin_ptr plugin = m_plugin_instance->the_plugin;
 						
@@ -286,7 +286,7 @@ namespace ladspam
 							
 							jack_port_t *port = jack_port_register
 							(
-								synth_client,
+								m_jack_client,
 								port_name_stream.str().c_str(),
 								JACK_DEFAULT_AUDIO_TYPE,
 								port_flags,
@@ -308,7 +308,7 @@ namespace ladspam
 						
 						for (unsigned port_index = 0; port_index < synth_ports.size(); ++port_index)
 						{
-							jack_port_unregister(synth_client, synth_ports[port_index]);
+							jack_port_unregister(m_jack_client, synth_ports[port_index]);
 						}
 					}
 				};
@@ -365,7 +365,7 @@ namespace ladspam
 								new ladspamm::plugin_instance
 								(
 									lib->plugins[index], 
-									jack_get_sample_rate(synth_client)
+									jack_get_sample_rate(m_jack_client)
 								)
 							);
 							

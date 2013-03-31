@@ -13,7 +13,7 @@ namespace ladspam
 		}
 		
 		synth::synth(const std::string &client_name, unsigned control_period) :
-			synth_client(jack_client_open(client_name.c_str(), JackUseExactName, 0)),
+			m_jack_client(jack_client_open(client_name.c_str(), JackUseExactName, 0)),
 			m_control_period(control_period),
 			m_plugin_counter(0),
 			m_active(true),
@@ -21,21 +21,21 @@ namespace ladspam
 			m_activation_commands(1024),
 			m_activation_acknowledgements(1024)
 		{
-			if (NULL == synth_client)
+			if (NULL == m_jack_client)
 			{
 				throw std::runtime_error("Failed to open jack client");
 			}
 			
-			if (0 != jack_set_process_callback(synth_client, jack_process, this))
+			if (0 != jack_set_process_callback(m_jack_client, jack_process, this))
 			{
 				throw std::runtime_error("Failed to set jack process callback");
 			}
 		
-			if (0 != jack_get_buffer_size(synth_client) % m_control_period)
+			if (0 != jack_get_buffer_size(m_jack_client) % m_control_period)
 			{
 				throw std::runtime_error("control period must be a divider of buffer size");
 			}
-			jack_activate(synth_client);
+			jack_activate(m_jack_client);
 		}
 	}
 }
