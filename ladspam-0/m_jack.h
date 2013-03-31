@@ -19,8 +19,6 @@
 #include <vector>
 #include <sstream>
 
-#include <iostream>
-
 namespace ladspam
 {
 	extern "C"
@@ -61,8 +59,6 @@ namespace ladspam
 
 		virtual ~m_jack()
 		{
-			std::cout << "~m_jack()" << std::endl;
-			
 			for 
 			(
 				unsigned plugin_index = 0, plugin_index_max = m_plugins.size(); 
@@ -70,14 +66,11 @@ namespace ladspam
 				++plugin_index
 			)
 			{
-				std::cout << "calling remove_plugin()" << std::endl << std::flush;
 				remove_plugin(0);
 			}
 			
 			jack_deactivate(m_jack_client);
 			jack_client_close(m_jack_client);
-			
-			std::cout << "done" << std::endl << std::flush;
 		}
 
 		virtual unsigned number_of_plugins() const
@@ -87,18 +80,13 @@ namespace ladspam
 
 		virtual void remove_plugin(unsigned index)
 		{
-			std::cout << "removing plugin: " << index << std::endl << std::flush;
-			
 			set_active(false);
 			
 			{
-				std::cout << "erase" << std::endl << std::flush;
 				m_plugins.erase(m_plugins.begin() + index);
 			}
 			
 			set_active(true);
-			
-			std::cout << "done removing plugin" << std::endl << std::flush;
 		}
 
 		virtual void insert_plugin
@@ -116,7 +104,6 @@ namespace ladspam
 			
 			{
 				m_plugins.insert(m_plugins.begin() + index, the_plugin);
-				std::cout << "have " << m_plugins.size() << std::endl << std::flush;
 			}
 			
 			set_active(true);
@@ -204,39 +191,6 @@ namespace ladspam
 				}
 				
 				instance.run(control_period);
-#if 0
-				for 
-				(
-					unsigned frame_index = chunk_index * control_period, 
-					frame_index_max = (chunk_index + 1) * control_period; 
-					frame_index < frame_index_max; 
-					++frame_index
-				)
-				{
-					for 
-					(
-						unsigned port_index = 0, port_index_max = instance.the_plugin->port_count(); 
-						port_index < port_index_max; 
-						++port_index
-					)
-					{
-						if (0 == jack_port_connected(p->m_jack_ports[port_index]))
-						{
-							instance.connect_port(port_index, &p->m_port_values[port_index]);
-						}
-						else
-						{
-							instance.connect_port
-							(
-								port_index, 
-								((float*)jack_port_get_buffer(p->m_jack_ports[port_index], nframes)) + frame_index
-							);
-						}
-						
-						instance.run(1);
-					}
-				}
-#endif
 			}
 		}
 		
@@ -357,12 +311,10 @@ namespace ladspam
 				
 				~plugin()
 				{
-					std::cout << "~plugin()" << std::endl << std::flush;
 					m_plugin_instance->deactivate();
 					
 					for (unsigned port_index = 0; port_index < m_jack_ports.size(); ++port_index)
 					{
-						std::cout << "unregistering port: " << port_index << std::endl;
 						jack_port_unregister(m_jack_client, m_jack_ports[port_index]);
 					}
 				}
