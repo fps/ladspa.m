@@ -19,6 +19,8 @@
 #include <vector>
 #include <sstream>
 
+#include <iostream>
+
 namespace ladspam
 {
 	extern "C"
@@ -54,8 +56,23 @@ namespace ladspam
 
 		virtual ~m_jack()
 		{
+			std::cout << "~m_jack()" << std::endl;
+			
+			for 
+			(
+				unsigned plugin_index = 0, plugin_index_max = m_plugins.size(); 
+				plugin_index < plugin_index_max; 
+				++plugin_index
+			)
+			{
+				std::cout << "calling remove_plugin()" << std::endl << std::flush;
+				remove_plugin(0);
+			}
+			
 			jack_deactivate(m_jack_client);
 			jack_client_close(m_jack_client);
+			
+			std::cout << "done" << std::endl << std::flush;
 		}
 
 		virtual unsigned number_of_plugins() const
@@ -65,7 +82,18 @@ namespace ladspam
 
 		virtual void remove_plugin(unsigned index)
 		{
-
+			std::cout << "removing plugin: " << index << std::endl << std::flush;
+			
+			set_active(false);
+			
+			{
+				std::cout << "erase" << std::endl << std::flush;
+				m_plugins.erase(m_plugins.begin() + index);
+			}
+			
+			set_active(true);
+			
+			std::cout << "done removing plugin" << std::endl << std::flush;
 		}
 
 		virtual void insert_plugin
@@ -76,13 +104,16 @@ namespace ladspam
 		)
 		{
 			ladspamm::plugin_instance_ptr instance = load_ladspa_plugin(library, label);
-			plugin the_plugin(instance, m_jack_client, m_plugin_counter++);
+			plugin_ptr the_plugin(new plugin(instance, m_jack_client, m_plugin_counter++));
 
 			
 			set_active(false);
+			
 			{
 				m_plugins.insert(m_plugins.begin() + index, the_plugin);
+				std::cout << "have " << m_plugins.size() << std::endl << std::flush;
 			}
+			
 			set_active(true);
 		}
 
@@ -133,9 +164,9 @@ namespace ladspam
 
 		inline void process_plugin(jack_nframes_t nframes, unsigned plugin_index)
 		{
-			plugin &p = m_plugins[plugin_index];
+			plugin_ptr &p = m_plugins[plugin_index];
 			
-			ladspamm::plugin_instance_ptr &instance = p.m_plugin_instance;
+			ladspamm::plugin_instance_ptr &instance = p->m_plugin_instance;
 			
 			for (unsigned frame_index = 0; frame_index < nframes; ++frame_index)
 			{
@@ -146,16 +177,16 @@ namespace ladspam
 					++port_index
 				)
 				{
-					if (0 == jack_port_connected(p.m_jack_ports[port_index]))
+					if (0 == jack_port_connected(p->m_jack_ports[port_index]))
 					{
-						instance->connect_port(port_index, &p.m_port_values[port_index]);
+						instance->connect_port(port_index, &p->m_port_values[port_index]);
 					}
 					else
 					{
 						instance->connect_port
 						(
 							port_index, 
-							((float*)jack_port_get_buffer(p.m_jack_ports[port_index], nframes)) + frame_index
+							((float*)jack_port_get_buffer(p->m_jack_ports[port_index], nframes)) + frame_index
 						);
 					}
 					
@@ -179,7 +210,7 @@ namespace ladspam
 				while (true == m_port_value_commands.can_read())
 				{
 					set_port_value_command command = m_port_value_commands.read();
-					m_plugins[command.m_plugin_index].m_port_values[command.m_port_index] = command.m_value;
+					m_plugins[command.m_plugin_index]->m_port_values[command.m_port_index] = command.m_value;
 				}
 				
 				process_active(nframes);
@@ -268,7 +299,21 @@ namespace ladspam
 						m_jack_ports.push_back(port);
 					}
 				}
+				
+				~plugin()
+				{
+					std::cout << "~plugin()" << std::endl << std::flush;
+					m_plugin_instance->deactivate();
+					
+					for (unsigned port_index = 0; port_index < m_jack_ports.size(); ++port_index)
+					{
+						std::cout << "unregistering port: " << port_index << std::endl;
+						jack_port_unregister(m_jack_client, m_jack_ports[port_index]);
+					}
+				}
 			};
+			
+			typedef boost::shared_ptr<plugin> plugin_ptr;
 
 			/*
 				The protocol to update the plugins is the
@@ -280,7 +325,7 @@ namespace ladspam
 				
 				3] set_active(true)
 			*/
-			std::vector<plugin> m_plugins;
+			std::vector<plugin_ptr> m_plugins;
 
 			/*
 				Blocks until the process
