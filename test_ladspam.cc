@@ -1,4 +1,5 @@
 #include <ladspam-0/m_jack.h>
+#include <ladspam-0/i_jack.h>
 
 #include <unistd.h>
 #include <iostream>
@@ -26,6 +27,8 @@ int main()
 	m1.insert_plugin(0, "/usr/lib/ladspa/flanger_1191.so", "flanger");
 	m1.insert_plugin(m1.number_of_plugins(), "/usr/lib/ladspa/amp.so", "amp_mono");
 
+	ladspam::i_jack("i1", 8, 3);
+	
 	std::string s;
 	std::cin >> s;
 }
