@@ -1,5 +1,5 @@
-#ifndef LADSPAM_INCLUDED_HH
-#define LADSPAM_INCLUDED_HH
+#ifndef LADSPAM_M_JACK_INCLUDED_HH
+#define LADSPAM_M_JACK_INCLUDED_HH
 
 #include <boost/shared_ptr.hpp>
 #include <utility>
@@ -212,7 +212,10 @@ namespace ladspam
 				while (true == m_port_value_commands.can_read())
 				{
 					set_port_value_command command = m_port_value_commands.read();
-					m_plugins[command.m_plugin_index]->m_port_values[command.m_port_index][0] = command.m_value;
+					
+					std::vector<float> &port_values = m_plugins[command.m_plugin_index]->m_port_values[command.m_port_index];
+					
+					port_values[0] = command.m_value;
 				}
 				
 				process_active(nframes);
@@ -278,18 +281,26 @@ namespace ladspam
 						if (plugin->port_is_input(index))
 						{
 							port_flags |= JackPortIsInput;
+							
 							port_values[0] = m_plugin_instance->port_default_guessed(index);
-							m_port_values.push_back(port_values);
 						}
 						
 						if (plugin->port_is_output(index))
 						{
 							port_flags |= JackPortIsOutput;
-							m_port_values.push_back(port_values);
 						}
 						
+						m_port_values.push_back(port_values);
+						
+						std::cout << m_port_values[m_port_values.size()-1].size() << std::endl;
+						
 						std::stringstream port_name_stream;
-						port_name_stream << plugin_counter << "-" << plugin->label() << "-" << plugin->port_name(index);
+						
+						port_name_stream 
+							<< plugin_counter 
+							<< "-" << index 
+							<< "-" <<  plugin->label() 
+							<< "-" << plugin->port_name(index);
 						
 						jack_port_t *port = jack_port_register
 						(

@@ -34,7 +34,17 @@ namespace ladspam
 			const std::string &library, 
 			const std::string& label
 		) = 0;
-
+		
+		virtual void append_plugin
+		(
+			const std::string &library, 
+			const std::string& label
+		)
+		{
+			insert_plugin(number_of_plugins(), library, label);	
+		}
+		
+		
 		virtual void connect
 		(
 			unsigned source_plugin_index,
