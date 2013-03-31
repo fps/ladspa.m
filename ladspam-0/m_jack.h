@@ -166,31 +166,31 @@ namespace ladspam
 		{
 			plugin_ptr &p = m_plugins[plugin_index];
 			
-			ladspamm::plugin_instance_ptr &instance = p->m_plugin_instance;
+			ladspamm::plugin_instance &instance = *(p->m_plugin_instance);
 			
 			for (unsigned frame_index = 0; frame_index < nframes; ++frame_index)
 			{
 				for 
 				(
-					unsigned port_index = 0, port_index_max = instance->the_plugin->port_count(); 
+					unsigned port_index = 0, port_index_max = instance.the_plugin->port_count(); 
 					port_index < port_index_max; 
 					++port_index
 				)
 				{
 					if (0 == jack_port_connected(p->m_jack_ports[port_index]))
 					{
-						instance->connect_port(port_index, &p->m_port_values[port_index]);
+						instance.connect_port(port_index, &p->m_port_values[port_index]);
 					}
 					else
 					{
-						instance->connect_port
+						instance.connect_port
 						(
 							port_index, 
 							((float*)jack_port_get_buffer(p->m_jack_ports[port_index], nframes)) + frame_index
 						);
 					}
 					
-					instance->run(1);
+					instance.run(1);
 				}
 			}
 		}
