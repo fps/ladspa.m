@@ -15,7 +15,8 @@ namespace ladspam{
 			unsigned control_period,
 			unsigned number_of_voices
 		) :
-			m_jack(client_name, control_period)
+			m_jack(client_name, control_period),
+			m_voice_ports(number_of_voices)
 		{
 			
 		}
@@ -32,7 +33,10 @@ namespace ladspam{
 
 		virtual void remove_plugin(unsigned index)
 		{
-			
+			for (unsigned voice_index = 0; voice_index < m_voice_ports.size(); ++voice_index)
+			{
+				m_jack::remove_plugin(m_voice_ports.size() * index);
+			}
 		}
 
 		virtual void insert_plugin
@@ -42,7 +46,10 @@ namespace ladspam{
 			const std::string& label
 		)
 		{
-			
+			for (unsigned voice_index = 0; voice_index < m_voice_ports.size(); ++voice_index)
+			{
+				m_jack::insert_plugin(m_voice_ports.size() * index + voice_index, library, label);
+			}
 		}
 		
 		virtual void connect
@@ -53,7 +60,16 @@ namespace ladspam{
 			unsigned sink_port_index
 		)
 		{
-			
+			for (unsigned voice_index = 0; voice_index < m_voice_ports.size(); ++voice_index)
+			{
+				m_jack::connect
+				(
+					m_voice_ports.size() * source_plugin_index + voice_index,
+					source_port_index,
+					m_voice_ports.size() * sink_plugin_index + voice_index,
+					sink_port_index
+				);
+			}
 		}
 
 		virtual void disconnect
@@ -64,7 +80,16 @@ namespace ladspam{
 			unsigned sink_port_index
 		)
 		{
-			
+			for (unsigned voice_index = 0; voice_index < m_voice_ports.size(); ++voice_index)
+			{
+				m_jack::disconnect
+				(
+					m_voice_ports.size() * source_plugin_index + voice_index,
+					source_port_index,
+					m_voice_ports.size() * sink_plugin_index + voice_index,
+					sink_port_index
+				);
+			}
 		}
 
 		virtual bool set_port_value
@@ -74,7 +99,7 @@ namespace ladspam{
 			float value
 		)
 		{
-			
+			return true;
 		}
 
 		protected:
