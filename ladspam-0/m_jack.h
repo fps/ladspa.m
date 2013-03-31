@@ -117,7 +117,12 @@ namespace ladspam
 			unsigned sink_port_index
 		)
 		{
-
+			jack_connect
+			(
+				m_jack_client, 
+				jack_port_name(m_plugins[source_plugin_index]->m_jack_ports[source_port_index]),
+				jack_port_name(m_plugins[sink_plugin_index]->m_jack_ports[sink_port_index])
+			);
 		}
 
 		virtual void disconnect
@@ -128,7 +133,12 @@ namespace ladspam
 			unsigned sink_port_index
 		)
 		{
-
+			jack_disconnect
+			(
+				m_jack_client, 
+				jack_port_name(m_plugins[source_plugin_index]->m_jack_ports[source_port_index]),
+				jack_port_name(m_plugins[sink_plugin_index]->m_jack_ports[sink_port_index])
+			);
 		}
 
 		virtual bool set_port_value
