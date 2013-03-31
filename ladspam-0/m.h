@@ -40,7 +40,7 @@ namespace ladspam
 			unsigned source_plugin_index,
 			unsigned source_port_index,
 			unsigned sink_plugin_index,
-			unsigned sink_port_index,
+			unsigned sink_port_index
 		) = 0;
 
 		virtual void disconnect
@@ -48,10 +48,10 @@ namespace ladspam
 			unsigned source_plugin_index,
 			unsigned source_port_index,
 			unsigned sink_plugin_index,
-			unsigned sink_port_index,
+			unsigned sink_port_index
 		) = 0;
 
-		virtual void set_port_value
+		virtual bool set_port_value
 		(
 			unsigned plugin_index,
 			unsigned port_index,
