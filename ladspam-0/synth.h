@@ -8,23 +8,11 @@
 #include <ladspamm-0/plugin_instance.h>
 
 #include <boost/optional.hpp>
-#include <boost/concept_check.hpp>
+
+#include <cassert>
 
 namespace ladspam
 {
-
-struct m;
-
-struct m;
-	/*
-		The one unique interface.. Subclasses for
-		special implementations might offer yet more
-		derived types, e.g. ladspam::jack::instrument.
-		
-		Subclasses for special implementations also 
-		offer unique ways to expose some or all unconnected
-		plugin ports to the "outside", e.g. ladspam::jack::synth.
-	*/
 	struct synth 
 	{
 		typedef std::vector<float> buffer;
@@ -81,6 +69,11 @@ struct m;
 			insert_plugin(number_of_plugins(), library, label);	
 		}
 		
+		ladspamm::plugin_instance_ptr get_plugin(unsigned index)
+		{
+			return m_plugins[index]->m_plugin_instance;
+		}
+
 		void connect
 		(
 			unsigned sink_plugin_index,
@@ -88,7 +81,8 @@ struct m;
 			buffer_ptr buffer
 		)
 		{
-			
+			assert(sink_plugin_index < number_of_plugins());
+			m_plugins[sink_plugin_index]->m_connections[sink_port_index].push_back(buffer);
 		}
 
 		inline int find_connection_index
@@ -99,6 +93,9 @@ struct m;
 			unsigned sink_port_index
 		)
 		{
+			assert(sink_plugin_index < number_of_plugins());
+			assert(source_plugin_index < number_of_plugins());
+
 			plugin_ptr sink_plugin = m_plugins[sink_plugin_index];
 			
 			plugin_ptr source_plugin = m_plugins[source_plugin_index];
@@ -110,7 +107,6 @@ struct m;
 				{
 					if (connections[connection_index] == source_plugin->m_port_buffers[source_port_index])
 					{
-						connections.erase(connections.begin() + connection_index);
 						return connection_index;
 					}
 				}
@@ -128,6 +124,9 @@ struct m;
 			unsigned sink_port_index
 		)
 		{
+			assert(sink_plugin_index < number_of_plugins());
+			assert(sink_plugin_index < number_of_plugins());
+
 			int connection_index = find_connection_index
 			(
 				source_plugin_index, 
@@ -160,6 +159,9 @@ struct m;
 			unsigned sink_port_index
 		)
 		{
+			assert(sink_plugin_index < number_of_plugins());
+			assert(source_plugin_index < number_of_plugins());
+
 			int connection_index = find_connection_index
 			(
 				source_plugin_index, 
@@ -189,6 +191,8 @@ struct m;
 			float value
 		)
 		{
+			assert(plugin_index < number_of_plugins());
+
 			m_plugins[plugin_index]->m_port_values[port_index] = value;
 			
 			return true;
@@ -200,6 +204,8 @@ struct m;
 			unsigned port_index
 		)
 		{
+			assert(plugin_index < number_of_plugins());
+
 			return m_plugins[plugin_index]->m_port_buffers[port_index];
 		}
 		
@@ -256,7 +262,6 @@ struct m;
 						// Do nothing for outputs
 					}
 				}
-				//std::fill(m_
 				
 				plugin_instance.run(m_control_period);
 			}
@@ -348,6 +353,8 @@ struct m;
 			return ladspamm::plugin_instance_ptr();
 		}
 	};
+	
+	typedef boost::shared_ptr<synth> synth_ptr;
 }
 
 #endif
