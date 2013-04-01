@@ -16,9 +16,9 @@ LADSPAM_HEADERS = ladspam-0/synth.h
 LADSPAM_PRIVATE_HEADERS = ladspam-0/private/ringbuffer.h
 LADSPAM_JACK_HEADERS = ladspam-0/jack/synth.h ladspam-0/jack/instrument.h
 
-LADSPAM_SOURCES = ladspam-0/jack/synth.cc 
-
-libladspam-0.so: $(LADSPAM_HEADERS) $(LADSPAM_SOURCES)
+#LADSPAM_SOURCES = ladspam-0/jack/synth.cc 
+LADSPAM_SOURCES = 
+libladspam-0.so: $(LADSPAM_HEADERS) $(LADSPAM_SOURCES) $(LADSPAM_JACK_HEADERS) $(LADSPAM_PRIVATE_HEADERS)
 	g++ $(OPTIMIZATION_FLAGS) -I . -fPIC -shared -o libladspam-0.so $(LADSPAM_SOURCES) `pkg-config jack ladspamm-0 --cflags --libs`
 
 install: all
@@ -34,7 +34,7 @@ install: all
 	$(INSTALL) libladspam-0.so $(PREFIX)/lib/
 
 ladspam-0-test: test_ladspam.cc libladspam-0.so
-	g++ $(OPTIMIZATION_FLAGS) -I .  -ansi -Wall -o ladspam-0-test  test_ladspam.cc -L . -lladspam-0 -Wl,-rpath,.
+	g++ $(OPTIMIZATION_FLAGS) -I .  -ansi -Wall -o ladspam-0-test  test_ladspam.cc -L . -lladspam-0 -Wl,-rpath,. `pkg-config ladspamm-0 --cflags --libs`
 
 docs:
 	doxygen

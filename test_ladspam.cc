@@ -27,6 +27,7 @@ int main()
 	m1.insert_plugin(m1.number_of_plugins(), "/usr/lib/ladspa/amp.so", "amp_mono");
 #endif
 
+#if 0
 	ladspam::jack::instrument i1("i1", 8, 2);
 
 	i1.append_plugin("/usr/lib/ladspa/dahdsr_fexp.so", "dahdsr_fexp");
@@ -48,7 +49,11 @@ int main()
 	i1.set_port_value(3, 5, 0.2);
 	i1.set_port_value(3, 6, 0.2);
 	i1.set_port_value(3, 7, 0.2);
+#endif
 
+	ladspam::synth synth(48000, 8);
+	
 	std::string s;
 	std::cin >> s;
+	
 }
