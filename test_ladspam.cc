@@ -37,11 +37,13 @@ int main()
 	i1.append_plugin("/usr/lib/ladspa/product_1668.so", "product_iaia_oa");
 	i1.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
 
+	// Set the parameters for the envelope of voice 1
 	i1.set_port_value(0, 4, 0.2);
 	i1.set_port_value(0, 5, 0.2);
 	i1.set_port_value(0, 6, 0.2);
 	i1.set_port_value(0, 7, 0.2);
 	
+	// Set the parameters for the envelope of voice 2
 	i1.set_port_value(3, 4, 0.2);
 	i1.set_port_value(3, 5, 0.2);
 	i1.set_port_value(3, 6, 0.2);
