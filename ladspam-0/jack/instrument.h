@@ -82,7 +82,6 @@ struct m;
 					}
 				}
 				
-				std::cout << "-" << std::flush;
 				// UGLY
 				return -1;
 			}
