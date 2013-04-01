@@ -81,6 +81,11 @@ int main()
 	for (unsigned chunk = 0; chunk < 1000; ++chunk)
 	{
 		synth.process();
+		
+		for (unsigned frame = 0; frame < 8; ++frame)
+		{
+			std::cout << (*synth.get_buffer(2, 1))[frame] << std::endl;
+		}
 	}
 	
 #if 0
