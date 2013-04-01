@@ -208,7 +208,58 @@ struct m;
 		{
 			for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
 			{
+				plugin &the_plugin = *(m_plugins[plugin_index]);
+				ladspamm::plugin_instance &plugin_instance = *the_plugin.m_plugin_instance;
 				
+				for (unsigned port_index = 0; port_index < the_plugin.m_port_buffers.size(); ++port_index)
+				{
+					unsigned number_of_connections = the_plugin.m_connections[port_index].size();
+					if (plugin_instance.the_plugin->port_is_input(port_index))
+					{
+						if (number_of_connections == 0)
+						{
+							std::fill
+							(
+								the_plugin.m_port_buffers[port_index]->begin(),
+								the_plugin.m_port_buffers[port_index]->end(),
+								the_plugin.m_port_values[port_index]
+							);
+						}
+						else
+						{
+							for (unsigned connection_index = 0; connection_index < number_of_connections; ++connection_index)
+							{
+								if (0 == connection_index)
+								{
+									std::copy
+									(
+										the_plugin.m_connections[port_index][connection_index]->begin(),
+										the_plugin.m_connections[port_index][connection_index]->end(),
+										the_plugin.m_port_buffers[port_index]->begin()
+									);
+								}
+								else
+								{
+									std::transform
+									(
+										the_plugin.m_connections[port_index][connection_index]->begin(),
+										the_plugin.m_connections[port_index][connection_index]->end(),
+										the_plugin.m_port_buffers[port_index]->begin(),
+										the_plugin.m_port_buffers[port_index]->begin(),
+										std::plus<float>()
+									);
+								}
+							}
+						}
+					}
+					else
+					{
+						// Do nothing for outputs
+					}
+				}
+				//std::fill(m_
+				
+				plugin_instance.run(m_control_period);
 			}
 		}
 		
@@ -258,9 +309,16 @@ struct m;
 					
 					m_port_buffers.push_back(port_buffer);
 					m_connections.push_back(std::vector<buffer_ptr>());
+					
+					m_plugin_instance->connect_port(port_index, &((*m_port_buffers[port_index])[0]));
 				}
 				
 				m_plugin_instance->activate();
+			}
+			
+			~plugin()
+			{
+				m_plugin_instance->deactivate();
 			}
 		};
 		
