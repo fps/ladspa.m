@@ -54,17 +54,18 @@ struct m;
 				return (2.0 * 440.0 / 32.0) * pow(2, (((jack_default_audio_sample_t)note - 9.0) / 12.0));
 			}
 
-			unsigned oldest_voice()
+			unsigned oldest_voice(unsigned frame)
 			{
-				jack_nframes_t minimum_start_frame = m_voices[0]->m_start_frame;
+				jack_nframes_t minimum_age = frame + jack_last_frame_time(m_jack_client) - m_voices[0]->m_start_frame;
 				unsigned oldest_index = 0;
 				
 				for (unsigned voice_index = 1; voice_index < m_voices.size(); ++voice_index)
 				{
-					if (m_voices[voice_index]->m_start_frame < minimum_start_frame)
+					jack_nframes_t age = frame + jack_last_frame_time(m_jack_client) - m_voices[voice_index]->m_start_frame;
+					if (age > minimum_age)
 					{
 						oldest_index = voice_index;
-						minimum_start_frame = m_voices[voice_index]->m_start_frame;
+						minimum_age = age;
 					}
 				}
 				
@@ -73,7 +74,7 @@ struct m;
 			
 			int voice_playing_note(unsigned note)
 			{
-				for (unsigned voice_index = 1; voice_index < m_voices.size(); ++voice_index)
+				for (unsigned voice_index = 0; voice_index < m_voices.size(); ++voice_index)
 				{
 					if (m_voices[voice_index]->m_note == note && m_voices[voice_index]->m_gate > 0)
 					{
@@ -81,6 +82,7 @@ struct m;
 					}
 				}
 				
+				std::cout << "-" << std::flush;
 				// UGLY
 				return -1;
 			}
@@ -121,14 +123,14 @@ struct m;
 							unsigned note = *(midi_in_event.buffer + 1);
 							float velocity = *(midi_in_event.buffer + 2) / 128.0;
 							
-							int voice_index = oldest_voice();
+							int oldest_voice_index = oldest_voice(frame);
 
-							m_voices[voice_index]->m_note = note;
-							m_voices[voice_index]->m_gate = 1.0;
-							m_voices[voice_index]->m_start_frame = jack_last_frame_time(m_jack_client) + frame;
-							m_voices[voice_index]->m_on_velocity = velocity;
+							m_voices[oldest_voice_index]->m_note = note;
+							m_voices[oldest_voice_index]->m_gate = 1.0;
+							m_voices[oldest_voice_index]->m_start_frame = jack_last_frame_time(m_jack_client) + frame;
+							m_voices[oldest_voice_index]->m_on_velocity = velocity;
 							
-							float *trigger_out_buffer = (float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[0], nframes);
+							float *trigger_out_buffer = (float*)jack_port_get_buffer(m_voices[oldest_voice_index]->m_jack_ports[0], nframes);
 							
 							trigger_out_buffer[frame] = 1.0;
 						}
@@ -139,7 +141,7 @@ struct m;
 
 							unsigned note = *(midi_in_event.buffer + 1);
 							
-							int  voice_index = voice_playing_note(note);
+							int voice_index = voice_playing_note(note);
 							
 							if (-1 != voice_index)
 							{
