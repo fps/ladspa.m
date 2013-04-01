@@ -16,7 +16,7 @@ LADSPAM_HEADERS = ladspam-0/synth.h
 LADSPAM_PRIVATE_HEADERS = ladspam-0/private/ringbuffer.h
 LADSPAM_JACK_HEADERS = ladspam-0/jack/synth.h ladspam-0/jack/instrument.h
 
-LADSPAM_SOURCES = ladspam-0/jack/synth.cc ladspam-0/jack/instrument.cc
+LADSPAM_SOURCES = ladspam-0/jack/synth.cc 
 
 libladspam-0.so: $(LADSPAM_HEADERS) $(LADSPAM_SOURCES)
 	g++ $(OPTIMIZATION_FLAGS) -I . -fPIC -shared -o libladspam-0.so $(LADSPAM_SOURCES) `pkg-config jack ladspamm-0 --cflags --libs`

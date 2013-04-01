@@ -87,24 +87,13 @@ struct m;
 			
 			virtual int process(jack_nframes_t nframes)
 			{
+				// Reset all trigger ports to 0. The rest will be set anyways later..
 				for (unsigned voice_index = 0; voice_index < m_voices.size(); ++voice_index)
 				{
-					float *trigger_out_buffer = 
+					float *buffer = 
 						(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[0], nframes);
 						
-					float *gate_out_buffer = 
-						(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[1], nframes);
-						
-					float *freq_out_buffer = 
-						(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[2], nframes);
-						
-					float *velocity_out_buffer = 
-						(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[3], nframes);
-						
-					std::fill(gate_out_buffer, gate_out_buffer + nframes, 0);
-					std::fill(trigger_out_buffer, trigger_out_buffer + nframes, 0);
-					std::fill(freq_out_buffer, freq_out_buffer + nframes, 0);
-					std::fill(velocity_out_buffer, velocity_out_buffer + nframes, 0);
+					std::fill(buffer, buffer + nframes, 0);
 				}
 
 				void *midi_in_buffer = jack_port_get_buffer(m_midi_in_jack_port, nframes);
@@ -113,8 +102,9 @@ struct m;
 
 				jack_nframes_t event_count = jack_midi_get_event_count(midi_in_buffer);
 				jack_nframes_t event_index = 0;
-				if (event_count > 0) {
-					//cout << "ev" << endl;
+				
+				if (event_count > 0) 
+				{
 					jack_midi_event_get(&midi_in_event, midi_in_buffer, event_index);
 				}
 				
@@ -169,15 +159,22 @@ struct m;
 						float *gate_out_buffer = 
 							(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[1], nframes);
 							
-						float *freq_out_buffer = 
+						gate_out_buffer[frame] = m_voices[voice_index]->m_gate;
+						
+						float *velocity_out_buffer = 
 							(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[2], nframes);
 							
-						float *velocity_out_buffer = 
+						velocity_out_buffer[frame] = m_voices[voice_index]->m_on_velocity / 128.0;
+						
+						float *freq_out_buffer = 
 							(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[3], nframes);
 							
-						gate_out_buffer[frame] = m_voices[voice_index]->m_gate;
-						velocity_out_buffer[frame] = m_voices[voice_index]->m_on_velocity;
 						freq_out_buffer[frame] = note_frequency(m_voices[voice_index]->m_note);
+						
+						float *scaled_freq_out_buffer = 
+							(float*)jack_port_get_buffer(m_voices[voice_index]->m_jack_ports[4], nframes);
+							
+						scaled_freq_out_buffer[frame] = note_frequency(m_voices[voice_index]->m_note) / (float)jack_get_sample_rate(m_jack_client);
 					}
 				}
 		
@@ -201,64 +198,35 @@ struct m;
 					
 					voice(jack_client_t *jack_client, unsigned voice_index) :
 						m_gate(0.0),
+						m_note(0),
+						m_on_velocity(0),
+						m_off_velocity(0),
+						m_start_frame(0),
 						m_jack_client(jack_client)
 					{
-						std::stringstream trigger_stream;
-						trigger_stream << "voice-" << voice_index << "-trigger";
+						unsigned port_index = 0;
+						register_port(voice_index, port_index++, "trigger");
+						register_port(voice_index, port_index++, "gate");
+						register_port(voice_index, port_index++, "velocity");
+						register_port(voice_index, port_index++, "frequency");
+						register_port(voice_index, port_index++, "frequency-scaled");
+					}
+					
+					void register_port(unsigned voice_index, unsigned port_index, std::string suffix)
+					{
+						std::stringstream stream;
+						stream << "voice-" << voice_index << "-" << port_index << "-" << suffix;
 						
-						jack_port_t *trigger_port = jack_port_register
+						jack_port_t *port = jack_port_register
 						(
 							m_jack_client, 
-							trigger_stream.str().c_str(),
+							stream.str().c_str(),
 							JACK_DEFAULT_AUDIO_TYPE,
 							JackPortIsOutput,
 							0
 						);
 						
-						m_jack_ports.push_back(trigger_port);
-
-						std::stringstream gate_stream;
-						gate_stream << "voice-" << voice_index << "-gate";
-						
-						jack_port_t *gate_port = jack_port_register
-						(
-							m_jack_client, 
-							gate_stream.str().c_str(),
-							JACK_DEFAULT_AUDIO_TYPE,
-							JackPortIsOutput,
-							0
-						);
-				
-						m_jack_ports.push_back(gate_port);
-
-						std::stringstream frequency_stream;
-						frequency_stream << "voice-" << voice_index << "-frequency";
-						
-						jack_port_t *frequency_port = jack_port_register
-						(
-							m_jack_client, 
-							frequency_stream.str().c_str(),
-							JACK_DEFAULT_AUDIO_TYPE,
-							JackPortIsOutput,
-							0
-						);
-						
-						m_jack_ports.push_back(frequency_port);
-
-						std::stringstream velocity_stream;
-						velocity_stream << "voice-" << voice_index << "-velocity";
-						
-						jack_port_t *velocity_port = jack_port_register
-						(
-							m_jack_client, 
-							velocity_stream.str().c_str(),
-							JACK_DEFAULT_AUDIO_TYPE,
-							JackPortIsOutput,
-							0
-						);
-						
-						m_jack_ports.push_back(velocity_port);
-
+						m_jack_ports.push_back(port);
 					}
 					
 					~voice()
