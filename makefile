@@ -10,7 +10,7 @@ OPTIMIZATION_FLAGS = -O3 -march=native -g
 
 .PHONY: install all clean
 
-all: libladspam-0.so ladspam-0-test
+all: libladspam-0.so ladspam-0-test ladspam-0-test-synth
 
 LADSPAM_HEADERS = ladspam-0/synth.h 
 LADSPAM_PRIVATE_HEADERS = ladspam-0/private/ringbuffer.h
@@ -35,6 +35,9 @@ install: all
 
 ladspam-0-test: test_ladspam.cc libladspam-0.so
 	g++ $(OPTIMIZATION_FLAGS) -I .  -ansi -Wall -o ladspam-0-test  test_ladspam.cc -L . -lladspam-0 -Wl,-rpath,. `pkg-config ladspamm-0 --cflags --libs`
+
+ladspam-0-test-synth: test_synth.cc libladspam-0.so
+	g++ $(OPTIMIZATION_FLAGS) -I .  -ansi -Wall -o ladspam-0-test-synth  test_synth.cc -L . -lladspam-0 -Wl,-rpath,. `pkg-config ladspamm-0 --cflags --libs` -lboost_system -lboost_timer
 
 docs:
 	doxygen

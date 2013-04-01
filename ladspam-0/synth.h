@@ -33,8 +33,7 @@ struct m;
 
 		synth(unsigned sample_rate, unsigned control_period) :
 			m_control_period(control_period),
-			m_sample_rate(sample_rate),
-			m_frame_in_chunk(0)
+			m_sample_rate(sample_rate)
 		{
 			
 		}
@@ -268,9 +267,7 @@ struct m;
 		unsigned m_control_period;
 				
 		unsigned m_sample_rate;
-		
-		unsigned m_frame_in_chunk;
-		
+				
 		struct plugin
 		{
 			
