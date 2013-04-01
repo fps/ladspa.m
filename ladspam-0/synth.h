@@ -8,9 +8,12 @@
 #include <ladspamm-0/plugin_instance.h>
 
 #include <boost/optional.hpp>
+#include <boost/concept_check.hpp>
 
 namespace ladspam
 {
+
+struct m;
 
 struct m;
 	/*
@@ -24,10 +27,14 @@ struct m;
 	*/
 	struct synth 
 	{
+		typedef std::vector<float> buffer;
+
+		typedef boost::shared_ptr<buffer> buffer_ptr;
+
 		synth(unsigned sample_rate, unsigned control_period) :
 			m_control_period(control_period),
-			m_plugin_counter(0),
-			m_sample_rate(sample_rate)
+			m_sample_rate(sample_rate),
+			m_frame_in_chunk(0)
 		{
 			
 		}
@@ -62,7 +69,7 @@ struct m;
 			const std::string& label
 		)
 		{
-			plugin_ptr the_plugin(new plugin(load_ladspa_plugin(library, label), m_plugin_counter++, m_control_period));
+			plugin_ptr the_plugin(new plugin(load_ladspa_plugin(library, label), m_control_period));
 			m_plugins.insert(m_plugins.begin() + index, the_plugin);
 		}
 		
@@ -75,6 +82,44 @@ struct m;
 			insert_plugin(number_of_plugins(), library, label);	
 		}
 		
+		void connect
+		(
+			unsigned sink_plugin_index,
+			unsigned sink_port_index,
+			buffer_ptr buffer
+		)
+		{
+			
+		}
+
+		inline int find_connection_index
+		(
+			unsigned source_plugin_index,
+			unsigned source_port_index,
+			unsigned sink_plugin_index,
+			unsigned sink_port_index
+		)
+		{
+			plugin_ptr sink_plugin = m_plugins[sink_plugin_index];
+			
+			plugin_ptr source_plugin = m_plugins[source_plugin_index];
+			
+			for (unsigned port_index = 0; port_index < sink_plugin->m_port_buffers.size(); ++port_index)
+			{
+				std::vector<buffer_ptr> connections = sink_plugin->m_connections[sink_port_index];
+				for (unsigned connection_index = 0; connection_index < connections.size(); ++connection_index)
+				{
+					if (connections[connection_index] == source_plugin->m_port_buffers[source_port_index])
+					{
+						connections.erase(connections.begin() + connection_index);
+						return connection_index;
+					}
+				}
+			}
+			
+			//UGLY!
+			return -1;
+		}
 		
 		virtual void connect
 		(
@@ -84,7 +129,28 @@ struct m;
 			unsigned sink_port_index
 		)
 		{
+			int connection_index = find_connection_index
+			(
+				source_plugin_index, 
+				source_port_index, 
+				sink_plugin_index, 
+				sink_port_index
+			);
 			
+			if (-1 != connection_index)
+			{
+				std::cout << "Ignored - Ports already connected" << std::endl;
+				return;
+			}
+			
+			plugin_ptr sink_plugin = m_plugins[sink_plugin_index];
+			
+			plugin_ptr source_plugin = m_plugins[source_plugin_index];
+			
+			m_plugins[sink_plugin_index]->m_connections[sink_port_index].push_back
+			(
+				m_plugins[source_plugin_index]->m_port_buffers[source_port_index]
+			);
 		}
 
 		virtual void disconnect
@@ -95,7 +161,26 @@ struct m;
 			unsigned sink_port_index
 		)
 		{
+			int connection_index = find_connection_index
+			(
+				source_plugin_index, 
+				source_port_index, 
+				sink_plugin_index, 
+				sink_port_index
+			);
 			
+			if (-1 == connection_index)
+			{
+				std::cout << "Ignored - Ports not connected" << std::endl;
+				return;
+			}
+			
+			plugin_ptr sink_plugin = m_plugins[sink_plugin_index];
+			
+			sink_plugin->m_connections[sink_port_index].erase
+			(
+				sink_plugin->m_connections[sink_port_index].begin() + connection_index
+			);
 		}
 
 		virtual bool set_port_value
@@ -110,26 +195,33 @@ struct m;
 			return true;
 		}
 		
-		//! number_of_frames must be smaller than control_period
-		virtual int process(unsigned number_of_frames)
+		buffer_ptr get_buffer
+		(
+			unsigned plugin_index,
+			unsigned port_index
+		)
 		{
-			return 0;
+			return m_plugins[plugin_index]->m_port_buffers[port_index];
 		}
+		
+		virtual void process()
+		{
+			for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
+			{
+				
+			}
+		}
+		
 		
 	protected:
 		unsigned m_control_period;
-		
-		unsigned m_plugin_counter;
-		
+				
 		unsigned m_sample_rate;
+		
+		unsigned m_frame_in_chunk;
 		
 		struct plugin
 		{
-			typedef std::vector<float> buffer;
-
-			typedef boost::shared_ptr<buffer> buffer_ptr;
-			
-			typedef boost::optional<buffer_ptr> connection;
 			
 			ladspamm::plugin_instance_ptr m_plugin_instance;
 			
@@ -137,18 +229,19 @@ struct m;
 			
 			std::vector<float> m_port_values;
 			
-			std::vector<connection> m_connections;
+			std::vector<std::vector<buffer_ptr> > m_connections;
 
 			plugin
 			(
 				ladspamm::plugin_instance_ptr plugin_instance,
-				unsigned plugin_counter,
 				unsigned control_period
 			) :
 				m_plugin_instance(plugin_instance)
 			{
 				ladspamm::plugin_ptr plugin = m_plugin_instance->the_plugin;
 				
+				m_port_values.resize(plugin->port_count());
+
 				for (unsigned port_index = 0; port_index < plugin->port_count(); ++port_index)
 				{
 					buffer_ptr port_buffer(new buffer);
@@ -164,7 +257,7 @@ struct m;
 					}
 					
 					m_port_buffers.push_back(port_buffer);
-					m_connections.push_back(connection());
+					m_connections.push_back(std::vector<buffer_ptr>());
 				}
 				
 				m_plugin_instance->activate();
