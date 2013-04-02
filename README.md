@@ -48,6 +48,19 @@ https://github.com/fps/ladspa.m.swig
 
 which allows to setup and execute synthesis graphs from within python for increased flexibility.
 
+# Protobuf file format
+
+There is a library for defining a file format for synth graphs:
+
+https://github.com/fps/ladspa.m.proto
+
+# Jack synth and instrument hosts
+
+There is also a library for loading said files into a jack host:
+
+https://github.com/fps/ladspa.m.jack
+
+
 # License 
 
 LGPL v2.0 or later (see the LICENSE file)
