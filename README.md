@@ -28,6 +28,8 @@ preferrably as superuser:
 sudo make install
 </pre>
 
+This will install the header to /usr/local/include/ladspam-0/ and a pkg-config file to /usr/local/lib/pkgconfig/.
+
 # How to use it?
 
 Check out the test program 
