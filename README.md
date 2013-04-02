@@ -8,7 +8,7 @@ A modular synthesis library for LADSPA plugins.
 
 # Building
 
-There is nothing to build except the little test program since ladspa.m is a header only library. To build the test program it type
+There is nothing to build except the little test program since ladspa.m is a header only library. To build the test program type
 
 <pre>
 make
