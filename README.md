@@ -40,6 +40,14 @@ Note that the ladspa.m does not provide any means to discover plugins on the sys
 
 https://github.com/fps/ladspamm
 
+# Python bindings
+
+You can also check out the python bindings for ladspa.m
+
+https://github.com/fps/ladspa.m.swig
+
+which allows to setup and execute synthesis graphs from within python for increased flexibility.
+
 # License 
 
 LGPL v2.0 or later (see the LICENSE file)
