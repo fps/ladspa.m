@@ -8,7 +8,7 @@ A modular synthesis library for LADSPA plugins.
 
 # Building
 
-There is nothing to build except the little test program since ladspa.m is a header only library. To build the test program it type
+There is nothing to build except the little test program since ladspa.m is a header only library. To build the test program type
 
 <pre>
 make
@@ -39,6 +39,14 @@ https://github.com/fps/ladspa.m/blob/master/test_synth.cc
 Note that the ladspa.m does not provide any means to discover plugins on the system. For that use the ladspamm library
 
 https://github.com/fps/ladspamm
+
+# Python bindings
+
+You can also check out the python bindings for ladspa.m
+
+https://github.com/fps/ladspa.m.swig
+
+which allows to setup and execute synthesis graphs from within python for increased flexibility.
 
 # License 
 
