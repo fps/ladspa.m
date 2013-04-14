@@ -27,7 +27,7 @@ int main()
 	
 	for (unsigned chunk = 0; chunk < (1024/8); ++chunk)
 	{
-		synth.process();
+		synth.process(8);
 		
 		for (unsigned frame = 0; frame < 8; ++frame)
 		{

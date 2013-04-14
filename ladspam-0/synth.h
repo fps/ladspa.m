@@ -35,7 +35,7 @@ namespace ladspam
 			
 		}
 		
-		unsigned number_of_plugins() const
+		inline unsigned number_of_plugins() const
 		{
 			return m_plugins.size();
 		}
@@ -44,7 +44,7 @@ namespace ladspam
 			The parameter index must be in the
 			range 0 <= index < number_of_plugins().
 		*/
-		void remove_plugin(unsigned index)
+		inline void remove_plugin(unsigned index)
 		{
 			m_plugins.erase(m_plugins.begin() + index);
 		}
@@ -53,7 +53,7 @@ namespace ladspam
 			The parameter index must be in the
 			range 0 <= index < number_of_plugins().
 		*/
-		void insert_plugin
+		inline void insert_plugin
 		(
 			unsigned index, 
 			const std::string &library, 
@@ -64,7 +64,7 @@ namespace ladspam
 			m_plugins.insert(m_plugins.begin() + index, the_plugin);
 		}
 		
-		void append_plugin
+		inline void append_plugin
 		(
 			const std::string &library, 
 			const std::string& label
@@ -73,12 +73,12 @@ namespace ladspam
 			insert_plugin(number_of_plugins(), library, label);	
 		}
 		
-		ladspamm::plugin_instance_ptr get_plugin(unsigned index)
+		inline ladspamm::plugin_instance_ptr get_plugin(unsigned index)
 		{
 			return m_plugins[index]->m_plugin_instance;
 		}
 
-		void connect
+		inline void connect
 		(
 			unsigned sink_plugin_index,
 			unsigned sink_port_index,
@@ -120,7 +120,7 @@ namespace ladspam
 			return -1;
 		}
 		
-		void connect
+		inline void connect
 		(
 			unsigned source_plugin_index,
 			unsigned source_port_index,
@@ -155,7 +155,7 @@ namespace ladspam
 			);
 		}
 
-		void disconnect
+		inline void disconnect
 		(
 			unsigned source_plugin_index,
 			unsigned source_port_index,
@@ -188,7 +188,7 @@ namespace ladspam
 			);
 		}
 
-		bool set_port_value
+		inline bool set_port_value
 		(
 			unsigned plugin_index,
 			unsigned port_index,
@@ -202,7 +202,7 @@ namespace ladspam
 			return true;
 		}
 		
-		buffer_ptr get_buffer
+		inline buffer_ptr get_buffer
 		(
 			unsigned plugin_index,
 			unsigned port_index
@@ -213,8 +213,10 @@ namespace ladspam
 			return m_plugins[plugin_index]->m_port_buffers[port_index];
 		}
 		
-		void process()
+		inline void process(unsigned number_of_frames)
 		{
+			assert(number_of_frames <= m_buffer_size);
+			
 			for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
 			{
 				plugin &the_plugin = *(m_plugins[plugin_index]);
@@ -230,7 +232,7 @@ namespace ladspam
 							std::fill
 							(
 								the_plugin.m_port_buffers[port_index]->begin(),
-								the_plugin.m_port_buffers[port_index]->end(),
+								the_plugin.m_port_buffers[port_index]->begin() + number_of_frames,
 								the_plugin.m_port_values[port_index]
 							);
 						}
@@ -243,7 +245,8 @@ namespace ladspam
 									std::copy
 									(
 										the_plugin.m_connections[port_index][connection_index]->begin(),
-										the_plugin.m_connections[port_index][connection_index]->end(),
+										the_plugin.m_connections[port_index][connection_index]->begin()
+											+ number_of_frames,
 										the_plugin.m_port_buffers[port_index]->begin()
 									);
 								}
@@ -252,7 +255,8 @@ namespace ladspam
 									std::transform
 									(
 										the_plugin.m_connections[port_index][connection_index]->begin(),
-										the_plugin.m_connections[port_index][connection_index]->end(),
+										the_plugin.m_connections[port_index][connection_index]->begin()
+											+ number_of_frames,
 										the_plugin.m_port_buffers[port_index]->begin(),
 										the_plugin.m_port_buffers[port_index]->begin(),
 										std::plus<float>()
@@ -332,7 +336,7 @@ namespace ladspam
 		
 		std::vector<plugin_ptr> m_plugins;
 		
-		ladspamm::plugin_instance_ptr load_ladspa_plugin(std::string library, std::string label)
+		inline ladspamm::plugin_instance_ptr load_ladspa_plugin(std::string library, std::string label)
 		{
 			ladspamm::library_ptr lib(new ladspamm::library(library));
 			
