@@ -8,7 +8,7 @@ PKGCONFIG_DIR ?= $(PREFIX)/lib/pkgconfig
 
 OPTIMIZATION_FLAGS = -O3 -march=native -g
 
-.PHONY: install all clean
+.PHONY: install all clean docs
 
 all: ladspam-0-test-synth
 

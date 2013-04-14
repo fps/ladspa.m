@@ -11,6 +11,15 @@
 
 #include <cassert>
 
+/**
+	\mainpage ladspa.m
+	
+	\include README.md
+*/
+
+/**
+	@brief All classes are in this namespace
+*/
 namespace ladspam
 {
 	struct synth 
@@ -19,8 +28,8 @@ namespace ladspam
 
 		typedef boost::shared_ptr<buffer> buffer_ptr;
 
-		synth(unsigned sample_rate, unsigned control_period) :
-			m_control_period(control_period),
+		synth(unsigned sample_rate, unsigned buffer_size) :
+			m_buffer_size(buffer_size),
 			m_sample_rate(sample_rate)
 		{
 			
@@ -56,7 +65,7 @@ namespace ladspam
 			const std::string& label
 		)
 		{
-			plugin_ptr the_plugin(new plugin(load_ladspa_plugin(library, label), m_control_period));
+			plugin_ptr the_plugin(new plugin(load_ladspa_plugin(library, label), m_buffer_size));
 			m_plugins.insert(m_plugins.begin() + index, the_plugin);
 		}
 		
@@ -263,13 +272,13 @@ namespace ladspam
 					}
 				}
 				
-				plugin_instance.run(m_control_period);
+				plugin_instance.run(m_buffer_size);
 			}
 		}
 		
 		
 	protected:
-		unsigned m_control_period;
+		unsigned m_buffer_size;
 				
 		unsigned m_sample_rate;
 				
@@ -287,7 +296,7 @@ namespace ladspam
 			plugin
 			(
 				ladspamm::plugin_instance_ptr plugin_instance,
-				unsigned control_period
+				unsigned buffer_size
 			) :
 				m_plugin_instance(plugin_instance)
 			{
@@ -298,7 +307,7 @@ namespace ladspam
 				for (unsigned port_index = 0; port_index < plugin->port_count(); ++port_index)
 				{
 					buffer_ptr port_buffer(new buffer);
-					port_buffer->resize(control_period);
+					port_buffer->resize(buffer_size);
 
 					if (plugin->port_is_input(port_index))
 					{
