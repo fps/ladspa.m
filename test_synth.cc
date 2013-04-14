@@ -1,5 +1,4 @@
-#include <ladspam-0/jack/synth.h>
-#include <ladspam-0/jack/instrument.h>
+#include <ladspam-0/synth.h>
 
 #include <unistd.h>
 #include <iostream>
