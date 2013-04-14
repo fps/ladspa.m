@@ -46,6 +46,8 @@ namespace ladspam
 		*/
 		inline void remove_plugin(unsigned index)
 		{
+			assert(index < number_of_plugins());
+			
 			m_plugins.erase(m_plugins.begin() + index);
 		}
 
@@ -60,6 +62,8 @@ namespace ladspam
 			const std::string& label
 		)
 		{
+			assert(index <= number_of_plugins());
+			
 			plugin_ptr the_plugin(new plugin(load_ladspa_plugin(library, label), m_buffer_size));
 			m_plugins.insert(m_plugins.begin() + index, the_plugin);
 		}
@@ -75,6 +79,8 @@ namespace ladspam
 		
 		inline ladspamm::plugin_instance_ptr get_plugin(unsigned index)
 		{
+			assert(index < number_of_plugins());
+			
 			return m_plugins[index]->m_plugin_instance;
 		}
 
@@ -86,6 +92,8 @@ namespace ladspam
 		)
 		{
 			assert(sink_plugin_index < number_of_plugins());
+			assert(sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports);
+			
 			m_plugins[sink_plugin_index]->m_connections[sink_port_index].push_back(buffer);
 		}
 
@@ -99,6 +107,8 @@ namespace ladspam
 		{
 			assert(sink_plugin_index < number_of_plugins());
 			assert(source_plugin_index < number_of_plugins());
+			assert(sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports);
+			assert(source_port_index < m_plugins[source_plugin_index]->m_number_of_ports);
 
 			plugin_ptr sink_plugin = m_plugins[sink_plugin_index];
 			
@@ -129,7 +139,9 @@ namespace ladspam
 		)
 		{
 			assert(sink_plugin_index < number_of_plugins());
-			assert(sink_plugin_index < number_of_plugins());
+			assert(source_plugin_index < number_of_plugins());
+			assert(sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports);
+			assert(source_port_index < m_plugins[source_plugin_index]->m_number_of_ports);
 
 			int connection_index = find_connection_index
 			(
@@ -165,6 +177,8 @@ namespace ladspam
 		{
 			assert(sink_plugin_index < number_of_plugins());
 			assert(source_plugin_index < number_of_plugins());
+			assert(sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports);
+			assert(source_port_index < m_plugins[sink_plugin_index]->m_number_of_ports);
 
 			int connection_index = find_connection_index
 			(
@@ -196,6 +210,7 @@ namespace ladspam
 		)
 		{
 			assert(plugin_index < number_of_plugins());
+			assert(port_index < m_plugins[plugin_index]->m_number_of_input_ports);
 
 			m_plugins[plugin_index]->m_port_values[port_index] = value;
 			
@@ -209,6 +224,7 @@ namespace ladspam
 		)
 		{
 			assert(plugin_index < number_of_plugins());
+			assert(port_index < m_plugins[plugin_index]->m_number_of_ports);
 
 			return m_plugins[plugin_index]->m_port_buffers[port_index];
 		}
@@ -292,12 +308,19 @@ namespace ladspam
 			
 			std::vector<std::vector<buffer_ptr> > m_connections;
 
+			unsigned m_number_of_input_ports;
+			unsigned m_number_of_output_ports;
+			unsigned m_number_of_ports;
+			
 			plugin
 			(
 				ladspamm::plugin_instance_ptr plugin_instance,
 				unsigned buffer_size
 			) :
-				m_plugin_instance(plugin_instance)
+				m_plugin_instance(plugin_instance),
+				m_number_of_input_ports(0),
+				m_number_of_output_ports(0),
+				m_number_of_ports(0)
 			{
 				ladspamm::plugin_ptr plugin = m_plugin_instance->the_plugin;
 				
@@ -311,11 +334,15 @@ namespace ladspam
 					if (plugin->port_is_input(port_index))
 					{
 						m_port_values[port_index] = m_plugin_instance->port_default_guessed(port_index);
+						++m_number_of_input_ports;
 					}
 					else
 					{ 
 						m_port_values[port_index] = 0;
+						++m_number_of_output_ports;
 					}
+					
+					++m_number_of_ports;
 					
 					m_port_buffers.push_back(port_buffer);
 					m_connections.push_back(std::vector<buffer_ptr>());
