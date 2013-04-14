@@ -22,12 +22,32 @@
 */
 namespace ladspam
 {
+	/**
+	 * @brief A very low level class to create a graph of LADSPA plugins.
+	 * 
+	 * NOTE: Most of the functions have asserts to find errors in client programs. Use the NDEBUG preprocessor macro to compile without the assertions. We indicate assertions by "(assertion)" in this documentation.
+	 * 
+	 * A synthesis graph is defined by a list of loaded plugins (see insert_plugin() and append_plugin()). The connections are made with the connect() functions.
+	 * 
+	 * The order oif the added plugins matters. The plugins' run() functions are called in precisely the order in which they are in the plugins list.
+	 */
 	struct synth 
 	{
+		/**
+		 * @brief A buffer is just an array of floats.
+		 */
 		typedef std::vector<float> buffer;
 
+		/**
+		 * @brief Utility typedef to ease typing
+		 */
 		typedef boost::shared_ptr<buffer> buffer_ptr;
 
+		/**
+		 * @brief Create a synth with a given sample rate and buffer size.
+		 * 
+		 * NOTE:You MUST NOT call process() with a number_of_frames > the buffer size (assertion).
+		 */
 		synth(unsigned sample_rate, unsigned buffer_size) :
 			m_buffer_size(buffer_size),
 			m_sample_rate(sample_rate)
@@ -35,14 +55,36 @@ namespace ladspam
 			
 		}
 		
+		/**
+		 * @brief The sample rate given at construction time.
+		 */
+		inline unsigned sample_rate()
+		{
+			return m_sample_rate;
+		}
+		
+		/**
+		 * @brief The buffer size given at construction time.
+		 */
+		inline unsigned buffer_size()
+		{
+			return m_buffer_size;
+		}
+		
+		/**
+		 * @brief The number of plugins in the plugins list.
+		 */
 		inline unsigned number_of_plugins() const
 		{
 			return m_plugins.size();
 		}
 
-		/*
-			The parameter index must be in the
-			range 0 <= index < number_of_plugins().
+		/**
+		 * @brief Removes the plugin from the plugins list.
+		 * 
+		 * NOTE: index < number_of_plugins (assertion).
+		 * 
+		 * Connections to other plugins are automatically cleared.
 		*/
 		inline void remove_plugin(unsigned index)
 		{
@@ -51,10 +93,11 @@ namespace ladspam
 			m_plugins.erase(m_plugins.begin() + index);
 		}
 
-		/*
-			The parameter index must be in the
-			range 0 <= index < number_of_plugins().
-		*/
+		/**
+		 * @brief Inserts a plugin into the plugins list at the specified position.
+		 * 
+		 * NOTE: index < number_of_plugins (assertion)
+		 */
 		inline void insert_plugin
 		(
 			unsigned index, 
@@ -68,6 +111,9 @@ namespace ladspam
 			m_plugins.insert(m_plugins.begin() + index, the_plugin);
 		}
 		
+		/**
+		 * @brief Appends a plugin to the end of the plugins list.
+		 */
 		inline void append_plugin
 		(
 			const std::string &library, 
@@ -77,6 +123,11 @@ namespace ladspam
 			insert_plugin(number_of_plugins(), library, label);	
 		}
 		
+		/**
+		 * @brief Returns the plugin instance of the loaded plugin at the position index in the plugins list.
+		 * 
+		 * NOTE: index < number_of_plugins (assertion).
+		 */
 		inline ladspamm::plugin_instance_ptr get_plugin(unsigned index)
 		{
 			assert(index < number_of_plugins());
@@ -84,6 +135,17 @@ namespace ladspam
 			return m_plugins[index]->m_plugin_instance;
 		}
 
+		/**
+		 * @brief Connect a plugin's sink port to a (external) buffer.
+		 * 
+		 * NOTE: sink_plugin_index < number_of_plugins() (assertion)
+		 * 
+		 * NOTE: source_plugin_index < m_plugins[sink_plugin_index]->m_number_of_ports (assertion)
+		 * 
+		 * This function can be used to pass signals into a synthesis graph from the outside.
+		 * 
+		 * The sink_plugin_index has the prefix "sink" to denote that you should use an index of an input port.
+		 */
 		inline void connect
 		(
 			unsigned sink_plugin_index,
@@ -202,7 +264,14 @@ namespace ladspam
 			);
 		}
 
-		inline bool set_port_value
+		/**
+		 * @brief Set a port's value that is used when a port is not connected.
+		 * 
+		 * NOTE: plugin_index < number_of_plugins() (assertion)
+		 * 
+		 * NOTE: port_index < m_plugins[plugin_index]->m_number_of_input_ports (assertion)
+		 */
+		inline void set_port_value
 		(
 			unsigned plugin_index,
 			unsigned port_index,
@@ -213,10 +282,18 @@ namespace ladspam
 			assert(port_index < m_plugins[plugin_index]->m_number_of_input_ports);
 
 			m_plugins[plugin_index]->m_port_values[port_index] = value;
-			
-			return true;
 		}
 		
+		/**
+		 * @brief Returns the buffer of a plugin.
+		 * 
+		 * NOTE: plugin_index < number_of_plugins() (assertion)
+		 * 
+		 * NOTE: port_index < m_plugins[plugin_index]->m_number_of_ports (assertion)
+		 * 
+		 * This function can be used to get hold of a buffer of a plugin. This way
+		 * it is possible to get audio out of the synthesis graph.
+		 */
 		inline buffer_ptr get_buffer
 		(
 			unsigned plugin_index,
@@ -229,6 +306,11 @@ namespace ladspam
 			return m_plugins[plugin_index]->m_port_buffers[port_index];
 		}
 		
+		/**
+		 * @brief Execute the plugins in the plugins list in the given order.
+		 * 
+		 * NOTE: number_of_frames < buffer_size() (assertion)
+		 */
 		inline void process(unsigned number_of_frames)
 		{
 			assert(number_of_frames <= m_buffer_size);
@@ -359,6 +441,9 @@ namespace ladspam
 			}
 		};
 		
+		/**
+		 * @brief A utility typedef to ease typing.
+		 */
 		typedef boost::shared_ptr<plugin> plugin_ptr;
 		
 		std::vector<plugin_ptr> m_plugins;
