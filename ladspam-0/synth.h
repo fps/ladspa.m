@@ -229,6 +229,36 @@ namespace ladspam
 			);
 		}
 
+		/**
+		 * @brief A utility function to lookup the port index of the index'th input port.
+		 * 
+		 * NOTE: plugin_index < number_of_plugins() (assertion)
+		 * 
+		 * NOTE: sink_port_index < m_plugins[plugin_index]->m_number_of_input_ports (assertion)
+		 */
+		unsigned sink_port_index(unsigned plugin_index, unsigned sink_port_index)
+		{
+			assert(plugin_index < number_of_plugins());
+			assert(sink_port_index < m_plugins[plugin_index]->m_number_of_input_ports);
+			
+			return m_plugins[plugin_index]->m_input_port_indices[sink_port_index];
+		}
+		
+		/**
+		 * @brief A utility function to lookup the port index of the index'th output port.
+		 * 
+		 * NOTE: plugin_index < number_of_plugins() (assertion)
+		 * 
+		 * NOTE: source_port_index < m_plugins[plugin_index]->m_number_of_output_ports (assertion)
+		 */
+		unsigned source_port_index(unsigned plugin_index, unsigned source_port_index)
+		{
+			assert(plugin_index < number_of_plugins());
+			assert(source_port_index < m_plugins[plugin_index]->m_number_of_output_ports);
+			
+			return m_plugins[plugin_index]->m_output_port_indices[source_port_index];
+		}
+
 		inline void disconnect
 		(
 			unsigned source_plugin_index,
@@ -269,7 +299,7 @@ namespace ladspam
 		 * 
 		 * NOTE: plugin_index < number_of_plugins() (assertion)
 		 * 
-		 * NOTE: port_index < m_plugins[plugin_index]->m_number_of_input_ports (assertion)
+		 * NOTE: port_index < m_plugins[plugin_index]->m_number_of_ports (assertion)
 		 */
 		inline void set_port_value
 		(
@@ -279,7 +309,7 @@ namespace ladspam
 		)
 		{
 			assert(plugin_index < number_of_plugins());
-			assert(port_index < m_plugins[plugin_index]->m_number_of_input_ports);
+			assert(port_index < m_plugins[plugin_index]->m_number_of_ports);
 
 			m_plugins[plugin_index]->m_port_values[port_index] = value;
 		}
@@ -378,7 +408,10 @@ namespace ladspam
 		unsigned m_buffer_size;
 				
 		unsigned m_sample_rate;
-				
+	
+		/**
+		 * @brief A type to represent a loaded plugin. 
+		 */
 		struct plugin
 		{
 			
@@ -393,6 +426,9 @@ namespace ladspam
 			unsigned m_number_of_input_ports;
 			unsigned m_number_of_output_ports;
 			unsigned m_number_of_ports;
+			
+			std::vector<unsigned> m_input_port_indices;
+			std::vector<unsigned> m_output_port_indices;
 			
 			plugin
 			(
@@ -416,20 +452,22 @@ namespace ladspam
 					if (plugin->port_is_input(port_index))
 					{
 						m_port_values[port_index] = m_plugin_instance->port_default_guessed(port_index);
+						m_input_port_indices.push_back(port_index);
 						++m_number_of_input_ports;
 					}
 					else
 					{ 
 						m_port_values[port_index] = 0;
+						m_output_port_indices.push_back(port_index);
 						++m_number_of_output_ports;
 					}
-					
-					++m_number_of_ports;
 					
 					m_port_buffers.push_back(port_buffer);
 					m_connections.push_back(std::vector<buffer_ptr>());
 					
 					m_plugin_instance->connect_port(port_index, &((*m_port_buffers[port_index])[0]));
+					
+					++m_number_of_ports;
 				}
 				
 				m_plugin_instance->activate();
@@ -448,6 +486,11 @@ namespace ladspam
 		
 		std::vector<plugin_ptr> m_plugins;
 		
+		/**
+		 * @brief Loads a LADSPA plugin with the given label from the given library.
+		 * 
+		 * NOTE Fails when the label is not found in the library (assertion).
+		 */
 		inline ladspamm::plugin_instance_ptr load_ladspa_plugin(std::string library, std::string label)
 		{
 			ladspamm::library_ptr lib(new ladspamm::library(library));
@@ -470,7 +513,7 @@ namespace ladspam
 				}
 			}
 			
-			return ladspamm::plugin_instance_ptr();
+			assert(false);
 		}
 	};
 	
