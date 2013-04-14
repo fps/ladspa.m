@@ -35,12 +35,7 @@ namespace ladspam
 			
 		}
 		
-		virtual ~synth()
-		{
-
-		}
-
-		virtual unsigned number_of_plugins() const
+		unsigned number_of_plugins() const
 		{
 			return m_plugins.size();
 		}
@@ -49,7 +44,7 @@ namespace ladspam
 			The parameter index must be in the
 			range 0 <= index < number_of_plugins().
 		*/
-		virtual void remove_plugin(unsigned index)
+		void remove_plugin(unsigned index)
 		{
 			m_plugins.erase(m_plugins.begin() + index);
 		}
@@ -58,7 +53,7 @@ namespace ladspam
 			The parameter index must be in the
 			range 0 <= index < number_of_plugins().
 		*/
-		virtual void insert_plugin
+		void insert_plugin
 		(
 			unsigned index, 
 			const std::string &library, 
@@ -69,7 +64,7 @@ namespace ladspam
 			m_plugins.insert(m_plugins.begin() + index, the_plugin);
 		}
 		
-		virtual void append_plugin
+		void append_plugin
 		(
 			const std::string &library, 
 			const std::string& label
@@ -125,7 +120,7 @@ namespace ladspam
 			return -1;
 		}
 		
-		virtual void connect
+		void connect
 		(
 			unsigned source_plugin_index,
 			unsigned source_port_index,
@@ -160,7 +155,7 @@ namespace ladspam
 			);
 		}
 
-		virtual void disconnect
+		void disconnect
 		(
 			unsigned source_plugin_index,
 			unsigned source_port_index,
@@ -193,7 +188,7 @@ namespace ladspam
 			);
 		}
 
-		virtual bool set_port_value
+		bool set_port_value
 		(
 			unsigned plugin_index,
 			unsigned port_index,
@@ -218,7 +213,7 @@ namespace ladspam
 			return m_plugins[plugin_index]->m_port_buffers[port_index];
 		}
 		
-		virtual void process()
+		void process()
 		{
 			for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
 			{
