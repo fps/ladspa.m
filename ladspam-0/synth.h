@@ -297,6 +297,9 @@ namespace ladspam
 		{
 			assert(number_of_frames <= m_buffer_size);
 			
+			/*
+			 * Process all plugins in their order
+			 */
 			for 
 			(
 				unsigned plugin_index = 0, plugin_index_max = m_plugins.size(); 
@@ -309,7 +312,10 @@ namespace ladspam
 				ladspamm::plugin_instance &plugin_instance = *the_plugin.m_plugin_instance;
 				
 				ladspamm::plugin &the_ladspamm_plugin = *plugin_instance.the_plugin;
-				
+
+				/*
+				 * Handle port input values (connections or constants)
+				 */
 				for 
 				(
 					unsigned port_index = 0, port_index_max = the_plugin.m_port_buffers.size(); 
@@ -323,8 +329,14 @@ namespace ladspam
 					
 					const unsigned number_of_connections = the_plugin.m_connections[port_index].size();
 					
+					/*
+					 * We only care about input ports.
+					 */
 					if (the_ladspamm_plugin.port_is_input(port_index))
 					{
+						/*
+						 * If there are no connections, fill with the constant port value
+						 */
 						if (number_of_connections == 0)
 						{
 							if (true == the_ladspamm_plugin.port_is_control(port_index))
@@ -341,6 +353,10 @@ namespace ladspam
 								);
 							}
 						}
+						/*
+						 * In case of connections, copy and add the inputs of the connected
+						 * ports
+						 */
 						else
 						{
 							for 
@@ -352,7 +368,11 @@ namespace ladspam
 							{
 								const buffer &the_connected_buffer 
 									= *the_port_connections[connection_index];
-										
+								
+								/*
+								 * Treat the first connection different, since there's
+								 * no need to add.
+								 */
 								if (0 == connection_index)
 								{
 									std::copy
@@ -362,6 +382,10 @@ namespace ladspam
 										the_buffer.begin()
 									);
 								}
+								/*
+								 * Add buffer values of connected port to
+								 * input buffer
+								 */
 								else
 								{
 									std::transform
@@ -382,7 +406,7 @@ namespace ladspam
 					}
 				}
 				
-				plugin_instance.run(m_buffer_size);
+				plugin_instance.run(number_of_frames);
 			}
 		}
 		
