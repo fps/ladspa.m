@@ -30,13 +30,14 @@ int main()
 	
 	boost::timer::auto_cpu_timer t;
 	
-	for (unsigned chunk = 0; chunk < (1024/8); ++chunk)
+	for (unsigned chunk = 0; chunk < (4800000/8); ++chunk)
 	{
 		synth.process(8);
-		
+#if 0		
 		for (unsigned frame = 0; frame < 8; ++frame)
 		{
 			std::cout << (*synth.get_buffer(4, 2))[frame] << std::endl;
 		}
+#endif
 	}
 }

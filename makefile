@@ -6,7 +6,7 @@ SED ?= sed
 INCLUDE_PATH = $(PREFIX)/include/ladspam-0
 PKGCONFIG_DIR ?= $(PREFIX)/lib/pkgconfig
 
-OPTIMIZATION_FLAGS = -O3 -march=native -g
+CXXFLAGS ?= -O3 -march=native 
 
 .PHONY: install all clean docs
 
@@ -22,7 +22,7 @@ install: all
 	$(INSTALL) $(LADSPAM_HEADERS) $(INCLUDE_PATH)
 
 ladspam-0-test-synth: test_synth.cc ladspam-0/synth.h
-	g++ $(OPTIMIZATION_FLAGS) -I .  -ansi -Wall -o ladspam-0-test-synth  test_synth.cc -L . -lladspam-0 -Wl,-rpath,. `pkg-config ladspamm-0 --cflags --libs` -lboost_system -lboost_timer
+	g++ $(CXXFLAGS) -I .  -ansi -Wall -o ladspam-0-test-synth  test_synth.cc -L . -lladspam-0 -Wl,-rpath,. `pkg-config ladspamm-0 --cflags --libs` -lboost_system -lboost_timer
 
 docs:
 	doxygen

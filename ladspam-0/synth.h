@@ -297,48 +297,71 @@ namespace ladspam
 		{
 			assert(number_of_frames <= m_buffer_size);
 			
-			for (unsigned plugin_index = 0; plugin_index < m_plugins.size(); ++plugin_index)
+			for 
+			(
+				unsigned plugin_index = 0, plugin_index_max = m_plugins.size(); 
+				plugin_index < plugin_index_max; 
+				++plugin_index
+			)
 			{
 				plugin &the_plugin = *(m_plugins[plugin_index]);
 				ladspamm::plugin_instance &plugin_instance = *the_plugin.m_plugin_instance;
+				ladspamm::plugin &the_ladspamm_plugin = *plugin_instance.the_plugin;
 				
-				for (unsigned port_index = 0; port_index < the_plugin.m_port_buffers.size(); ++port_index)
+				for 
+				(
+					unsigned port_index = 0, port_index_max = the_plugin.m_port_buffers.size(); 
+					port_index < port_index_max; 
+					++port_index
+				)
 				{
+					buffer &the_buffer = *the_plugin.m_port_buffers[port_index];
+					
+					std::vector<buffer_ptr> &the_port_connections = the_plugin.m_connections[port_index];
+					
 					unsigned number_of_connections = the_plugin.m_connections[port_index].size();
-					if (plugin_instance.the_plugin->port_is_input(port_index))
+					if (the_ladspamm_plugin.port_is_input(port_index))
 					{
 						if (number_of_connections == 0)
 						{
-							std::fill
-							(
-								the_plugin.m_port_buffers[port_index]->begin(),
-								the_plugin.m_port_buffers[port_index]->begin() + number_of_frames,
-								the_plugin.m_port_values[port_index]
-							);
+							if (true == the_ladspamm_plugin.port_is_control(port_index))
+							{
+								the_buffer[0] = the_plugin.m_port_values[port_index];
+							}
+							else
+							{
+								std::fill
+								(
+									the_buffer.begin(),
+									the_buffer.begin() + number_of_frames,
+									the_plugin.m_port_values[port_index]
+								);
+							}
 						}
 						else
 						{
 							for (unsigned connection_index = 0; connection_index < number_of_connections; ++connection_index)
 							{
+								const buffer &the_connected_buffer 
+									= *the_port_connections[connection_index];
+										
 								if (0 == connection_index)
 								{
 									std::copy
 									(
-										the_plugin.m_connections[port_index][connection_index]->begin(),
-										the_plugin.m_connections[port_index][connection_index]->begin()
-											+ number_of_frames,
-										the_plugin.m_port_buffers[port_index]->begin()
+										the_connected_buffer.begin(),
+										the_connected_buffer.begin() + number_of_frames,
+										the_buffer.begin()
 									);
 								}
 								else
 								{
 									std::transform
 									(
-										the_plugin.m_connections[port_index][connection_index]->begin(),
-										the_plugin.m_connections[port_index][connection_index]->begin()
-											+ number_of_frames,
-										the_plugin.m_port_buffers[port_index]->begin(),
-										the_plugin.m_port_buffers[port_index]->begin(),
+										the_connected_buffer.begin(),
+										the_connected_buffer.begin() + number_of_frames,
+										the_buffer.begin(),
+										the_buffer.begin(),
 										std::plus<float>()
 									);
 								}
