@@ -25,11 +25,17 @@ namespace ladspam
 	/**
 	 * @brief A very low level class to create a graph of LADSPA plugins.
 	 * 
-	 * NOTE: Most of the functions have asserts to find errors in client programs (mostly checking the bounds of indices). Use the NDEBUG preprocessor macro to compile without the assertions. 
+	 * NOTE: Most of the functions have asserts to find errors in client programs (mostly checking the bounds of indices). Use the NDEBUG preprocessor macro to compile without the assertions, once you have tested your client code thoroughly.  
+	 * 
+	 * NOTE: This class is threadsafe in the sense that two different threads can each own a DIFFERENT synth instance. It is NOT safe to call functions on a single synth instance from different threads.
 	 * 
 	 * A synthesis graph is defined by a list of loaded plugins (see insert_plugin() and append_plugin()). The connections are made with the connect() functions.
 	 * 
 	 * The order oif the added plugins matters. The plugins' run() functions are called in precisely the order in which they are in the plugins list.
+	 * 
+	 * You are free to connect control to audio ports and vice versa. Note though that control port values are updated only at the start of the process() call.
+	 * 
+	 * Take a look at the example code in test_synth.cc.
 	 */
 	struct synth 
 	{
@@ -45,6 +51,10 @@ namespace ladspam
 
 		/**
 		 * @brief Create a synth with a given sample rate and buffer size.
+		 * 
+		 * The buffer_size determines the maximum number of frames process() can be called with lateron.
+		 * 
+		 * The sample_rate is used to instantiate plugins with that sample rate.
 		 */
 		synth(unsigned sample_rate, unsigned buffer_size) :
 			m_buffer_size(buffer_size),

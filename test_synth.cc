@@ -6,6 +6,11 @@
 
 #include <boost/timer/timer.hpp>
 
+/**
+ * @brief An example program for ladspa.m
+ * 
+ * This example serves to illustrate how to load a number of LADSPA plugins and connect them. Also it shows how to get access to the output buffers.
+ */
 int main()
 {
 	ladspam::synth synth(48000, 8);
