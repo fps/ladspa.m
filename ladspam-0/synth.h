@@ -293,7 +293,7 @@ namespace ladspam
 		/**
 		 * @brief Execute the plugins in the plugins list in the given order.
 		 */
-		inline void process(unsigned number_of_frames)
+		inline void process(const unsigned number_of_frames)
 		{
 			assert(number_of_frames <= m_buffer_size);
 			
@@ -305,7 +305,9 @@ namespace ladspam
 			)
 			{
 				plugin &the_plugin = *(m_plugins[plugin_index]);
+				
 				ladspamm::plugin_instance &plugin_instance = *the_plugin.m_plugin_instance;
+				
 				ladspamm::plugin &the_ladspamm_plugin = *plugin_instance.the_plugin;
 				
 				for 
@@ -317,9 +319,10 @@ namespace ladspam
 				{
 					buffer &the_buffer = *the_plugin.m_port_buffers[port_index];
 					
-					std::vector<buffer_ptr> &the_port_connections = the_plugin.m_connections[port_index];
+					const std::vector<buffer_ptr> &the_port_connections = the_plugin.m_connections[port_index];
 					
-					unsigned number_of_connections = the_plugin.m_connections[port_index].size();
+					const unsigned number_of_connections = the_plugin.m_connections[port_index].size();
+					
 					if (the_ladspamm_plugin.port_is_input(port_index))
 					{
 						if (number_of_connections == 0)
@@ -340,7 +343,12 @@ namespace ladspam
 						}
 						else
 						{
-							for (unsigned connection_index = 0; connection_index < number_of_connections; ++connection_index)
+							for 
+							(
+								unsigned connection_index = 0; 
+								connection_index < number_of_connections; 
+								++connection_index
+							)
 							{
 								const buffer &the_connected_buffer 
 									= *the_port_connections[connection_index];
@@ -457,7 +465,7 @@ namespace ladspam
 				}
 			}
 			
-			assert(false);
+			return ladspamm::plugin_instance_ptr();
 		}
 		
 		/**

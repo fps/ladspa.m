@@ -6,7 +6,7 @@ SED ?= sed
 INCLUDE_PATH = $(PREFIX)/include/ladspam-0
 PKGCONFIG_DIR ?= $(PREFIX)/lib/pkgconfig
 
-CXXFLAGS ?= -O3 -march=native 
+CXXFLAGS ?= -O3 -march=native -DNDEBUG  -mfpmath=sse
 
 .PHONY: install all clean docs
 
