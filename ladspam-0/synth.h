@@ -394,6 +394,9 @@ namespace ladspam
 		 */
 		typedef boost::shared_ptr<plugin> plugin_ptr;
 		
+		/**
+		 * @brief The list of loaded plugins
+		 */
 		std::vector<plugin_ptr> m_plugins;
 		
 		/**
@@ -495,6 +498,9 @@ namespace ladspam
 		};
 	};
 	
+	/**
+	 * @brief A utility typedef to ease the typing load.
+	 */
 	typedef boost::shared_ptr<synth> synth_ptr;
 }
 
