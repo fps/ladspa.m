@@ -161,6 +161,8 @@ namespace ladspam
 
 		/**
 		 * @brief Connect a source port to a sink port. 
+		 * 
+		 * Note the port indices are absolute indices. I.e. you refer to the index'th port of the plugin. To get an absolute index of a sink or source port take a look at the source_port_index() and sink_port_index() functions.
 		 */
 		inline void connect
 		(
@@ -221,6 +223,11 @@ namespace ladspam
 			return m_plugins[plugin_index]->m_output_port_indices[source_port_index];
 		}
 
+		/**
+		 * @brief Disconnect a pair of ports
+		 * 
+		 * Note the port indices are absolute indices. I.e. you refer to the index'th port of the plugin. To get an absolute index of a sink or source port take a look at the source_port_index() and sink_port_index() functions.
+		 */
 		inline void disconnect
 		(
 			unsigned source_plugin_index,

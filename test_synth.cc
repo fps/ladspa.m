@@ -13,7 +13,8 @@
  */
 int main()
 {
-	ladspam::synth synth(48000, 8);
+	const unsigned buffer_size = 32;
+	ladspam::synth synth(48000, buffer_size);
 	
 	synth.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
 	synth.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
@@ -30,9 +31,9 @@ int main()
 	
 	boost::timer::auto_cpu_timer t;
 	
-	for (unsigned chunk = 0; chunk < (4800000/8); ++chunk)
+	for (unsigned chunk = 0; chunk < (100 * 48000) / buffer_size; ++chunk)
 	{
-		synth.process(8);
+		synth.process(buffer_size);
 #if 0		
 		for (unsigned frame = 0; frame < 8; ++frame)
 		{
