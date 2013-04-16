@@ -14,7 +14,9 @@
 int main()
 {
 	const unsigned buffer_size = 32;
-	ladspam::synth synth(48000, buffer_size);
+	const unsigned sample_rate = 48000;
+	
+	ladspam::synth synth(sample_rate, buffer_size);
 	
 	synth.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
 	synth.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
@@ -29,16 +31,22 @@ int main()
 	synth.connect(3, 2, 4, 0);
 	synth.connect(2, 1, 4, 1);
 	
-	boost::timer::auto_cpu_timer t;
+	std::cout << "Generating 100 seconds of audio at a samplerate of " << sample_rate << "..." << std::endl;
 	
-	for (unsigned chunk = 0; chunk < (100 * 48000) / buffer_size; ++chunk)
 	{
-		synth.process(buffer_size);
-#if 0		
-		for (unsigned frame = 0; frame < 8; ++frame)
+		boost::timer::auto_cpu_timer t;
+		
+		for (unsigned chunk = 0; chunk < (100 * sample_rate) / buffer_size; ++chunk)
 		{
-			std::cout << (*synth.get_buffer(4, 2))[frame] << std::endl;
+			synth.process(buffer_size);
+	#if 0		
+			for (unsigned frame = 0; frame < 8; ++frame)
+			{
+				std::cout << (*synth.get_buffer(4, 2))[frame] << std::endl;
+			}
+	#endif
 		}
-#endif
 	}
+	
+	std::cout << "Done. " << std::endl;
 }
