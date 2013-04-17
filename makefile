@@ -22,11 +22,11 @@ install: all
 	$(INSTALL) $(LADSPAM_HEADERS) $(INCLUDE_PATH)
 
 ladspam-0-test-synth: test_synth.cc ladspam-0/synth.h
-	g++ $(CXXFLAGS) -I .  -ansi -Wall -o ladspam-0-test-synth  test_synth.cc -L . -lladspam-0 -Wl,-rpath,. `pkg-config ladspamm-0 --cflags --libs` -lboost_system -lboost_timer
+	g++ $(CXXFLAGS) -I .  -ansi -Wall -o ladspam-0-test-synth  test_synth.cc  `pkg-config ladspamm-0 --cflags --libs` -lboost_system -lboost_timer
 
 docs:
 	doxygen
 
 clean:
-	rm -f ladspam-0-test libladspam-0.so
+	rm -f ladspam-0-test-synth
 	

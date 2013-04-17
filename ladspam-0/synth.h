@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <ladspamm-0/world.h>
 #include <ladspamm-0/library.h>
 #include <ladspamm-0/plugin_instance.h>
 
@@ -40,6 +41,11 @@ namespace ladspam
 	struct synth 
 	{
 		/**
+		 * @brief The ladspamm world that helps us find plugins
+		 */
+		ladspamm::world m_ladspam_world;
+		
+		/**
 		 * @brief A buffer is just an array of floats.
 		 */
 		typedef std::vector<float> buffer;
@@ -61,6 +67,27 @@ namespace ladspam
 			m_sample_rate(sample_rate)
 		{
 			
+		}
+		
+		/**
+		 * @brief Find a library that contains the given plugin label. 
+		 * 
+		 * Returns the empty string if the label is not found in any library on the system.
+		 */
+		std::string find_plugin_library(const std::string &label)
+		{
+			for (unsigned library_index = 0; library_index < m_ladspam_world.libraries.size(); ++library_index)
+			{
+				for (unsigned plugin_index = 0; plugin_index < m_ladspam_world.libraries[library_index]->plugins.size(); ++plugin_index)
+				{
+					if (m_ladspam_world.libraries[library_index]->plugins[plugin_index]->label() == label)
+					{
+						return m_ladspam_world.libraries[library_index]->the_dl->filename;
+					}
+				}
+			}
+			
+			return "";
 		}
 		
 		/**
