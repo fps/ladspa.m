@@ -5,6 +5,7 @@ libdir=${exec_prefix}/lib
 
 Name: ladspam-0
 Description: The ladspam library
+Requires: ladspamm-0
 Version: 0.0.1
 Cflags: -I${includedir}/
 Libs: 
