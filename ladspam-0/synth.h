@@ -3,14 +3,13 @@
 
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #include <ladspamm-0/world.h>
 #include <ladspamm-0/library.h>
 #include <ladspamm-0/plugin_instance.h>
 
 #include <boost/optional.hpp>
-
-#include <cif (false == >
 
 /**
 	\mainpage ladspa.m
@@ -308,19 +307,22 @@ namespace ladspam
 			unsigned sink_port_index
 		)
 		{
-			if (false == (sink_plugin_index < number_of_plugins())
+			if (false == (sink_plugin_index < number_of_plugins()))
 			{
 				throw std::runtime_error("get_plugin(): sink_plugin_index out of bounds");
 			}
-			if (false == (source_plugin_index < number_of_plugins())
+			
+			if (false == (source_plugin_index < number_of_plugins()))
 			{
 				throw std::runtime_error("get_plugin(): source_plugin_index out of bounds");
 			}
-			if (false == (sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports)
+			
+			if (false == (sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports))
 			{
 				throw std::runtime_error("get_plugin(): sink_port_index out of bounds");
 			}
-			if (false == (source_port_index < m_plugins[sink_plugin_index]->m_number_of_ports)
+			
+			if (false == (source_port_index < m_plugins[sink_plugin_index]->m_number_of_ports))
 			{
 				throw std::runtime_error("get_plugin(): source_port_index out of bounds");
 			}
@@ -357,11 +359,12 @@ namespace ladspam
 			float value
 		)
 		{
-			if (false == (plugin_index < number_of_plugins())
+			if (false == (plugin_index < number_of_plugins()))
 			{
 				throw std::runtime_error("get_plugin(): plugin_index out of bounds");
 			}
-			if (false == (port_index < m_plugins[plugin_index]->m_number_of_ports)
+			
+			if (false == (port_index < m_plugins[plugin_index]->m_number_of_ports))
 			{
 				throw std::runtime_error("get_plugin(): port_index out of bounds");
 			}
@@ -381,11 +384,12 @@ namespace ladspam
 			unsigned port_index
 		)
 		{
-			if (false == (plugin_index < number_of_plugins())
+			if (false == (plugin_index < number_of_plugins()))
 			{
 				throw std::runtime_error("get_plugin(): plugin_index out of bounds");
 			}
-			if (false == (port_index < m_plugins[plugin_index]->m_number_of_ports)
+			
+			if (false == (port_index < m_plugins[plugin_index]->m_number_of_ports))
 			{
 				throw std::runtime_error("get_plugin(): port_index out of bounds");
 			}
@@ -398,7 +402,7 @@ namespace ladspam
 		 */
 		inline void process(const unsigned number_of_frames)
 		{
-			if (false == (number_of_frames <= m_buffer_size)
+			if (false == (number_of_frames <= m_buffer_size))
 			{
 				throw std::runtime_error("process(): number_of_frames > m_buffer_size");
 			}
@@ -533,19 +537,22 @@ namespace ladspam
 			unsigned sink_port_index
 		)
 		{
-			if (false == (sink_plugin_index < number_of_plugins())
+			if (false == (sink_plugin_index < number_of_plugins()))
 			{
 				throw std::runtime_error("get_plugin(): sink_plugin_index out of bounds");
 			}
-			if (false == (source_plugin_index < number_of_plugins())
+			
+			if (false == (source_plugin_index < number_of_plugins()))
 			{
 				throw std::runtime_error("get_plugin(): source_plugin_index out of bounds");
 			}
-			if (false == (sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports)
+			
+			if (false == (sink_port_index < m_plugins[sink_plugin_index]->m_number_of_ports))
 			{
 				throw std::runtime_error("get_plugin(): sink_port_index out of bounds");
 			}
-			if (false == (source_port_index < m_plugins[source_plugin_index]->m_number_of_ports)
+			
+			if (false == (source_port_index < m_plugins[source_plugin_index]->m_number_of_ports))
 			{
 				throw std::runtime_error("get_plugin(): source_port_index out of bounds");
 			}
@@ -607,7 +614,7 @@ namespace ladspam
 				}
 			}
 			
-			return ladspamm::plugin_instance_ptr();
+			throw std::runtime_error("Plugin with label " + label + " not found in the library " + library);
 		}
 		
 		/**
