@@ -12,7 +12,7 @@ static const char* ladspam_port_names[] =
     "Gate",
     "Trigger",
     "Phase",
-    "Out2"
+    "Out"
 };
 
 static LADSPA_PortDescriptor ladspam_port_descriptors[] = 
@@ -70,6 +70,8 @@ void ladspam_run_sine(LADSPA_Handle instance, unsigned long sample_count)
     for (unsigned long index = 0; index < sample_count; ++index)
     {
         i->m_phase += i->m_ports[0][index] * 2.0 * M_PI / i->m_sample_rate;
+        i->m_phase = fmod(i->m_phase, 2.0 * M_PI);
+        i->m_ports[4][index] = sin(i->m_phase);
     }
 }
 
@@ -88,7 +90,7 @@ const LADSPA_Descriptor* ladspa_descriptor(unsigned long Index)
     if (Index >= LADSPAM_NUMBER_OF_PLUGINS) return 0;
 
     // static LADSPA_Descriptor *d = new LADSPA_Descriptor;
-    static LADSPA_Descriptor *d = &ladspam_descriptors[Index];
+    LADSPA_Descriptor *d = &ladspam_descriptors[Index];
 
     d->UniqueID = 0;
 

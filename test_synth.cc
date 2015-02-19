@@ -18,18 +18,11 @@ int main()
 	
 	ladspam::synth synth(sample_rate, buffer_size);
 	
-	synth.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
-	synth.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
-	synth.append_plugin("/usr/lib/ladspa/sawtooth_1641.so", "sawtooth_fa_oa");
-	synth.append_plugin("/usr/lib/ladspa/product_1668.so", "product_iaia_oa");
-	synth.append_plugin("/usr/lib/ladspa/product_1668.so", "product_iaia_oa");
+	synth.append_plugin("ladspam-0-plugins.so", "ladspam-sine-osc");
 
-	synth.set_port_value(0, 0, 666);
+	synth.set_port_value(0, 0, 1);
 	
-	synth.connect(0, 1, 3, 0);
-	synth.connect(1, 1, 3, 1);
-	synth.connect(3, 2, 4, 0);
-	synth.connect(2, 1, 4, 1);
+	// synth.connect(2, 1, 4, 1);
 	
 	std::cout << "Generating 100 seconds of audio at a samplerate of " << sample_rate << "..." << std::endl;
 	
@@ -39,12 +32,10 @@ int main()
 		for (unsigned chunk = 0; chunk < (100 * sample_rate) / buffer_size; ++chunk)
 		{
 			synth.process(buffer_size);
-	#if 0		
 			for (unsigned frame = 0; frame < 8; ++frame)
 			{
-				std::cout << (*synth.get_buffer(4, 2))[frame] << std::endl;
+				std::cout << (*synth.get_buffer(0, 4))[frame] << std::endl;
 			}
-	#endif
 		}
 	}
 	
