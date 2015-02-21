@@ -20,7 +20,7 @@ int main()
 	
 	synth synth(sample_rate, buffer_size);
 	
-	synth.append_plugin("ladspa.m.osc.plugins-1.so", "ladspam-sine-osc");
+	synth.append_plugin("ladspa.m.osc.plugins-1.so", "ladspa.m.sine.osc");
 
 	synth.set_port_value(0, 0, 1);
 	
@@ -36,7 +36,7 @@ int main()
 			synth.process(buffer_size);
 			for (unsigned frame = 0; frame < 8; ++frame)
 			{
-				std::cout << (*synth.get_buffer(0, 4))[frame] << std::endl;
+				std::cout << (*synth.get_buffer(0, 3))[frame] << std::endl;
 			}
 		}
 	}
