@@ -12,7 +12,7 @@ set(CMAKE_INSTALL_PREFIX /usr)
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Florian Paul Schmidt (mista.tapas@gmx.net)")
 set(CPACK_GENERATOR "DEB" "TGZ")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "ladspamm-1-dev")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "ladspamm-1-dev libboost-timer-dev")
 set(CPACK_DEBIAN_PACKAGE_NAME "ladspa.m-${PROJECT_VERSION}-dev")
 include(CPack)
 
