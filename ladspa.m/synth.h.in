@@ -5,14 +5,14 @@
 #include <vector>
 #include <stdexcept>
 
-#include <ladspamm-0/world.h>
-#include <ladspamm-0/library.h>
-#include <ladspamm-0/plugin_instance.h>
+#include <ladspamm-1/world.h>
+#include <ladspamm-1/library.h>
+#include <ladspamm-1/plugin_instance.h>
 
 #include <boost/optional.hpp>
 
 /**
-	\mainpage ladspa.m
+	\mainpage ladspa.m-@PROJECT_VERSION@
 	
 	\include README.md
 */
@@ -20,7 +20,7 @@
 /**
 	@brief All classes are in this namespace
 */
-namespace ladspam
+namespace ladspam@PROJECT_VERSION@
 {
 	/**
 	 * @brief A very low level class to create a graph of LADSPA plugins.
@@ -42,7 +42,7 @@ namespace ladspam
 		/**
 		 * @brief The ladspamm world that helps us find plugins
 		 */
-		ladspamm::world m_ladspam_world;
+		ladspamm1::world m_ladspam_world;
 		
 		/**
 		 * @brief A buffer is just an array of floats.
@@ -164,7 +164,7 @@ namespace ladspam
 		/**
 		 * @brief Returns the plugin instance of the loaded plugin at the position index in the plugins list.
 		 */
-		inline ladspamm::plugin_instance_ptr get_plugin(unsigned index)
+		inline ladspamm1::plugin_instance_ptr get_plugin(unsigned index)
 		{
 			if (false == (index < number_of_plugins()))
 			{
@@ -419,9 +419,9 @@ namespace ladspam
 			{
 				plugin &the_plugin = *(m_plugins[plugin_index]);
 				
-				ladspamm::plugin_instance &plugin_instance = *the_plugin.m_plugin_instance;
+				ladspamm1::plugin_instance &plugin_instance = *the_plugin.m_plugin_instance;
 				
-				ladspamm::plugin &the_ladspamm_plugin = *plugin_instance.the_plugin;
+				ladspamm1::plugin &the_ladspamm_plugin = *plugin_instance.the_plugin;
 
 				/*
 				 * Handle port input values (connections or constants)
@@ -592,17 +592,17 @@ namespace ladspam
 		/**
 		 * @brief Loads a LADSPA plugin with the given label from the given library.
 		 */
-		inline ladspamm::plugin_instance_ptr load_ladspa_plugin(std::string library, std::string label)
+		inline ladspamm1::plugin_instance_ptr load_ladspa_plugin(std::string library, std::string label)
 		{
-			ladspamm::library_ptr lib(new ladspamm::library(library));
+			ladspamm1::library_ptr lib(new ladspamm1::library(library));
 			
 			for (unsigned index = 0; index < lib->plugins.size(); ++index)
 			{
 				if (lib->plugins[index]->label() == label)
 				{
-					ladspamm::plugin_instance_ptr instance
+					ladspamm1::plugin_instance_ptr instance
 					(
-						new ladspamm::plugin_instance
+						new ladspamm1::plugin_instance
 						(
 							lib->plugins[index], 
 							m_sample_rate
@@ -623,7 +623,7 @@ namespace ladspam
 		struct plugin
 		{
 			
-			ladspamm::plugin_instance_ptr m_plugin_instance;
+			ladspamm1::plugin_instance_ptr m_plugin_instance;
 			
 			std::vector<buffer_ptr> m_port_buffers;
 			
@@ -640,7 +640,7 @@ namespace ladspam
 			
 			plugin
 			(
-				ladspamm::plugin_instance_ptr plugin_instance,
+				ladspamm1::plugin_instance_ptr plugin_instance,
 				unsigned buffer_size
 			) :
 				m_plugin_instance(plugin_instance),
@@ -648,7 +648,7 @@ namespace ladspam
 				m_number_of_output_ports(0),
 				m_number_of_ports(0)
 			{
-				ladspamm::plugin_ptr plugin = m_plugin_instance->the_plugin;
+				ladspamm1::plugin_ptr plugin = m_plugin_instance->the_plugin;
 				
 				m_port_values.resize(plugin->port_count());
 

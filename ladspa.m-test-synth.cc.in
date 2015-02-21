@@ -1,4 +1,4 @@
-#include <ladspam-0/synth.h>
+#include <ladspa.m-@PROJECT_VERSION@/synth.h>
 
 #include <unistd.h>
 #include <iostream>
@@ -13,10 +13,12 @@
  */
 int main()
 {
+	using namespace ladspam@PROJECT_VERSION@;
+
 	const unsigned buffer_size = 32;
 	const unsigned sample_rate = 48000;
 	
-	ladspam::synth synth(sample_rate, buffer_size);
+	synth synth(sample_rate, buffer_size);
 	
 	synth.append_plugin("ladspam-0-plugins.so", "ladspam-sine-osc");
 

@@ -1,11 +1,11 @@
-prefix=PREFIX
+prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib
 
-Name: ladspam-0
+Name: ladspa.m-@PROJECT_VERSION@
 Description: The ladspam library
-Requires: ladspamm-0
+Requires: ladspamm-1
 Version: 0.0.1
 Cflags: -I${includedir}/
 Libs: 
