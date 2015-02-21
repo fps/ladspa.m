@@ -20,7 +20,7 @@ int main()
 	
 	synth synth(sample_rate, buffer_size);
 	
-	synth.append_plugin("ladspam-0-plugins.so", "ladspam-sine-osc");
+	synth.append_plugin("ladspa.m.osc.plugins-1.so", "ladspam-sine-osc");
 
 	synth.set_port_value(0, 0, 1);
 	
