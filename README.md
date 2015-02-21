@@ -4,31 +4,24 @@ A modular synthesis library for LADSPA plugins.
 
 # Requirements
 
-* ladspamm-0 - https://github.com/fps/ladspamm
+* ladspamm-1 - https://github.com/fps/ladspamm
+* cmake 2.8
 
 # Building
 
 There is nothing to build except the little test program since ladspa.m is a header only library. To build the test program type
 
-<pre>
-make
-</pre>
+	mkdir bld
+	cmake ..
+	make 
+	make install
 
-# Installation
+There is also a debian package generator. If you want to use that:
 
-Type
-
-<pre>
-make install
-</pre>
-
-preferrably as superuser:
-
-<pre>
-sudo make install
-</pre>
-
-This will install the header to /usr/local/include/ladspam-0/ and a pkg-config file to /usr/local/lib/pkgconfig/.
+	mkdir bld
+	cmake ..
+	make package
+	dpkg -i ladspa.m-1-Linux.deb
 
 # How to use it?
 
