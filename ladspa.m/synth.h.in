@@ -70,8 +70,6 @@ namespace ladspam@PROJECT_VERSION@
 		
 		/**
 		 * @brief Find a library that contains the given plugin label. 
-		 * 
-		 * Returns the empty string if the label is not found in any library on the system.
 		 */
 		std::string find_plugin_library(const std::string &label)
 		{
@@ -244,7 +242,7 @@ namespace ladspam@PROJECT_VERSION@
 			
 			if (-1 != connection_index)
 			{
-				std::cout << "Ignored - Ports already connected" << std::endl;
+				// std::cout << "Ignored - Ports already connected" << std::endl;
 				return;
 			}
 			
@@ -337,7 +335,7 @@ namespace ladspam@PROJECT_VERSION@
 			
 			if (-1 == connection_index)
 			{
-				std::cout << "Ignored - Ports not connected" << std::endl;
+				// std::cout << "Ignored - Ports not connected" << std::endl;
 				return;
 			}
 			
@@ -451,6 +449,7 @@ namespace ladspam@PROJECT_VERSION@
 						{
 							if (true == the_ladspamm_plugin.port_is_control((unsigned)port_index))
 							{
+								// std::cout << "control" << std::endl;
 								the_buffer[0] = the_plugin.m_port_values[port_index];
 							}
 							else

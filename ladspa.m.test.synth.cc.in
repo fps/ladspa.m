@@ -15,7 +15,7 @@ int main()
 {
 	namespace ladspam = ladspam@PROJECT_VERSION@;
 
-	const unsigned buffer_size = 1000;
+	const unsigned buffer_size = 8;
 	const unsigned sample_rate = 1000;
 	const unsigned int seconds = 2;
 	
