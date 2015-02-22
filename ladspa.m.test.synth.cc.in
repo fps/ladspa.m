@@ -24,6 +24,8 @@ int main()
 	synth.append_plugin("ladspa.m.osc.plugins-1.so", "ladspa.m.saw.osc");
 
 	synth.set_port_value(0, 0, 1);
+	synth.set_port_value(0, 1, 0);
+	synth.set_port_value(0, 2, 0);
 	
 	// synth.connect(2, 1, 4, 1);
 	
