@@ -21,7 +21,7 @@ int main()
 	
 	ladspam::synth synth(sample_rate, buffer_size);
 	
-	synth.append_plugin("ladspa.m.osc.plugins-1.so", "ladspa.m.saw.osc");
+	synth.append_plugin("ladspa.m.osc.plugins-1.so", "ladspa.m.sine.osc");
 
 	synth.set_port_value(0, 0, 1);
 	synth.set_port_value(0, 1, 0);
