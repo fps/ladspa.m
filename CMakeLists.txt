@@ -9,10 +9,10 @@ set(PROJECT_VERSION "1")
 
 set(CMAKE_INSTALL_PREFIX /usr)
 
-set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_VERSION 1)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Florian Paul Schmidt (mista.tapas@gmx.net)")
 set(CPACK_GENERATOR "DEB" "TGZ")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "ladspamm-1-dev libboost-timer-dev")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "ladspamm-1-dev, ladspa.m.plugins-1, libboost-timer-dev")
 set(CPACK_DEBIAN_PACKAGE_NAME "ladspa.m-${PROJECT_VERSION}-dev")
 include(CPack)
 
@@ -30,7 +30,7 @@ configure_file(ladspa.m.pc.in ladspa.m-${PROJECT_VERSION}.pc @ONLY)
 
 configure_file(ladspa.m/synth.h.in ladspa.m-${PROJECT_VERSION}/synth.h)
 
-configure_file(ladspa.m-test-synth.cc.in ladspa.m-${PROJECT_VERSION}-test-synth.cc)
+configure_file(ladspa.m.test.synth.cc.in ladspa.m.test.synth.cc)
 
 include_directories(${PROJECT_BINARY_DIR})
 
@@ -80,8 +80,8 @@ find_package(Boost COMPONENTS timer REQUIRED)
 #
 # TARGETS
 # 
-add_executable(ladspa.m-${PROJECT_VERSION}-test-synth ladspa.m-${PROJECT_VERSION}-test-synth.cc)
-target_link_libraries(ladspa.m-${PROJECT_VERSION}-test-synth ${LADSPAMM_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(ladspa.m.test.synth-${PROJECT_VERSION} ${PROJECT_BINARY_DIR}/ladspa.m.test.synth.cc)
+target_link_libraries(ladspa.m.test.synth-${PROJECT_VERSION} ${LADSPAMM_LIBRARIES} ${Boost_LIBRARIES})
 
 # 
 # INSTALLATION
@@ -89,5 +89,5 @@ target_link_libraries(ladspa.m-${PROJECT_VERSION}-test-synth ${LADSPAMM_LIBRARIE
 
 install(DIRECTORY ${PROJECT_BINARY_DIR}/ladspa.m-${PROJECT_VERSION}  DESTINATION include)
 install(FILES ${PROJECT_BINARY_DIR}/ladspa.m-${PROJECT_VERSION}.pc DESTINATION lib/pkgconfig)
-install(TARGETS ladspa.m-${PROJECT_VERSION}-test-synth RUNTIME DESTINATION bin)
+install(TARGETS ladspa.m.test.synth-${PROJECT_VERSION} RUNTIME DESTINATION bin)
 

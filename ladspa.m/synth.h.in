@@ -110,7 +110,7 @@ namespace ladspam@PROJECT_VERSION@
 		 */
 		inline unsigned number_of_plugins() const
 		{
-			return m_plugins.size();
+			return (unsigned)m_plugins.size();
 		}
 
 		/**
@@ -412,7 +412,7 @@ namespace ladspam@PROJECT_VERSION@
 			 */
 			for 
 			(
-				unsigned plugin_index = 0, plugin_index_max = m_plugins.size(); 
+				size_t plugin_index = 0, plugin_index_max = m_plugins.size(); 
 				plugin_index < plugin_index_max; 
 				++plugin_index
 			)
@@ -428,7 +428,7 @@ namespace ladspam@PROJECT_VERSION@
 				 */
 				for 
 				(
-					unsigned port_index = 0, port_index_max = the_plugin.m_port_buffers.size(); 
+					size_t port_index = 0, port_index_max = the_plugin.m_port_buffers.size(); 
 					port_index < port_index_max; 
 					++port_index
 				)
@@ -437,19 +437,19 @@ namespace ladspam@PROJECT_VERSION@
 					
 					const std::vector<buffer_ptr> &the_port_connections = the_plugin.m_connections[port_index];
 					
-					const unsigned number_of_connections = the_plugin.m_connections[port_index].size();
+					const size_t number_of_connections = the_plugin.m_connections[port_index].size();
 					
 					/*
 					 * We only care about input ports.
 					 */
-					if (the_ladspamm_plugin.port_is_input(port_index))
+					if (the_ladspamm_plugin.port_is_input((unsigned)port_index))
 					{
 						/*
 						 * If there are no connections, fill with the constant port value
 						 */
 						if (number_of_connections == 0)
 						{
-							if (true == the_ladspamm_plugin.port_is_control(port_index))
+							if (true == the_ladspamm_plugin.port_is_control((unsigned)port_index))
 							{
 								the_buffer[0] = the_plugin.m_port_values[port_index];
 							}
