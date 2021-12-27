@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE RelWithDebugInfo)
 project(ladspa.m)
 set(PROJECT_VERSION "1")
 
-set(CMAKE_INSTALL_PREFIX /usr)
+# set(CMAKE_INSTALL_PREFIX /usr)
 
 set(CPACK_PACKAGE_VERSION 1)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Florian Paul Schmidt (mista.tapas@gmx.net)")
@@ -72,8 +72,10 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # BUILD DEPENDENCIES:
 #
 
-find_package(PkgConfig REQUIRED)
+#find_package(PkgConfig REQUIRED)
+include(FindPkgConfig)
 pkg_check_modules(LADSPAMM REQUIRED ladspamm-1)
+include_directories(${LADSPAMM_INCLUDE_DIRS})
 
 find_package(Boost COMPONENTS timer REQUIRED)
 
