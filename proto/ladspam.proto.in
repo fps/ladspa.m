@@ -1,0 +1,113 @@
+package ladspam_proto@PROJECT_VERSION@;
+
+/*
+	A value for an unconnected port.
+	Note: Use this only for input ports. Port indices are always absolute. 
+*/
+message Value {
+	required int32 port_index = 1;
+	required float value = 2;
+}
+
+/*
+	A Ladspa plugin.. If you do not specify the library, then 
+	a host is required to search the system (e.g. LADSPA_PATH)
+	for plugins that have a matching label.
+	
+	If you do specify a library file, then the host will try to 
+	load the plugin from that exact library file.
+*/
+message Plugin {
+	optional string library = 1;
+	required string label = 2;
+	repeated Value values = 3;
+}
+
+/*
+	A connection between two ports
+	to be used in a Synth/Instrument
+	
+	Note: Port indices are always absolute. 
+	
+	Note: The meaning of the source_index and
+	source_port_index are different when used in 
+	a] a synth or b] an instrument. 
+	
+	In case a] they refer to plugin/port indices.
+	
+	In case b] they refer to voice/port indices.
+*/
+message Connection {
+	required int32 source_index = 1;
+	required int32 source_port_index = 2;
+	required int32 sink_index = 3;
+	required int32 sink_port_index = 4;
+}
+
+message Port {
+	required int32 plugin_index = 1;
+	required int32 port_index = 2;
+}
+
+/*
+	Use this to specify what ports to expose in a host.
+	
+	How these ports are exposed is host-implementation dependent. The
+	ladspa.m.lv2 plugin for example has two input and two output 
+	ports, so any exposed ports beyond that will be ignored.
+	Note that you can expose a port more than once.
+*/
+message ExposedPort {
+	required Port port = 1;
+	required string name = 2;
+}           
+
+/*
+	A synth.
+	
+	Note: The order of plugins matters. They plugins
+	are executed by a host in exactly the order in 
+	which they appear in the plugin list.
+*/
+message Synth {
+	repeated Plugin plugins = 1;
+	repeated Connection connections = 2;
+	repeated ExposedPort exposed_ports = 3;
+}
+
+/*
+	An instrument. For each of the number_of_voices
+	voices there will be ports:
+	
+	0 trigger
+	1 gate
+	2 note_on_velocity
+	3 frequency
+	
+	So voice_connections here take as source_index
+	the voice number and as source_port_index
+	one of the numbers above. The sink_index
+	references any plugin in the synth.
+	
+	Additional voice ports are host dependent.
+
+	The control_connections define control
+	inputs. Their source_index indicates
+	the type of controller
+
+	0 = CC
+	1 = Pitch Wheel
+
+	Their source_port_index defines the 
+	controller number in case of CC.
+
+	The sink_index refers to any plugin 
+	in the synth. The sink_port_index
+	to one of its ports.
+*/
+message Instrument {
+	required Synth synth = 1;
+	required int32 number_of_voices = 2;
+	repeated Connection voice_connections = 3;
+	repeated Connection control_connections = 4;
+}

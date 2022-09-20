@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: ladspa.m.proto-@PROJECT_VERSION@
+Description: The ladspa.m.proto library
+Requires: protobuf
+Version: 0.0.1
+Cflags: -I${includedir}/ladspa.m.proto-@PROJECT_VERSION@
+Libs: -L${libdir} -lladspa.m.proto-1 
