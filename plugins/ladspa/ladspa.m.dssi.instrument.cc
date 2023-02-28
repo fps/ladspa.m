@@ -5,7 +5,7 @@
 #include <vector>
 #include <mutex>
 
-#include <ladspa.m-1/synth.h>
+#include <ladspa.m1/synth.h>
 
 static DSSI_Descriptor ladspam_dssi_descriptor;
 
