@@ -1,4 +1,4 @@
-#include <ladspa.m-@PROJECT_VERSION@/synth.h>
+#include <ladspa.m-1/synth.h>
 
 #include <unistd.h>
 #include <iostream>
@@ -13,7 +13,7 @@
  */
 int main()
 {
-	namespace ladspam = ladspam@PROJECT_VERSION@;
+	namespace ladspam = ladspam1;
 
 	const unsigned buffer_size = 8;
 	const unsigned sample_rate = 1000;
