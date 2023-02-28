@@ -1,4 +1,4 @@
-#include <ladspa.m-1/synth.h>
+#include <ladspa.m1/synth.h>
 
 #include <unistd.h>
 #include <iostream>
