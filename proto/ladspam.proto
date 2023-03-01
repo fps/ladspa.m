@@ -1,4 +1,4 @@
-package ladspam_proto@PROJECT_VERSION@;
+package ladspam_proto1;
 
 /*
 	A value for an unconnected port.

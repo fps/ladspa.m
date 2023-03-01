@@ -1,4 +1,4 @@
-#include <ladspam-jack-0/synth.h>
+#include <ladspam-jack0/synth.h>
 #include <ladspam1.pb.h>
 
 #include <iostream>

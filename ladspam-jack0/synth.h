@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-#include <ladspa.m-1/synth.h>
+#include <ladspa.m1/synth.h>
 #include <ladspam1.pb.h>
 
 #include <jack/jack.h>

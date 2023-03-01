@@ -1,4 +1,4 @@
-#include <ladspam-jack-0/instrument.h>
+#include <ladspam-jack0/instrument.h>
 #include <ladspam1.pb.h>
 
 #include <iostream>
