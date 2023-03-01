@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include <ladspa.m1/synth.h>
-#include <ladspam1.pb.h>
+#include <ladspa.m1/ladspam1.pb.h>
 
 #include <jack/jack.h>
 
