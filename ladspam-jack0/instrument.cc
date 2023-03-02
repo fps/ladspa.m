@@ -1,4 +1,4 @@
-#include <ladspam-jack-0/instrument.h>
+#include <ladspa.m1/jack_instrument.h>
 
 namespace ladspam_jack
 {

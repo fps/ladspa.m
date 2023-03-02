@@ -1,5 +1,5 @@
-#include <ladspam-jack0/synth.h>
-#include <ladspam1.pb.h>
+#include <ladspa.m1/jack_synth.h>
+#include <ladspa.m1/ladspam1.pb.h>
 
 #include <iostream>
 #include <fstream>

@@ -3,13 +3,13 @@
 
 #include <sstream>
 
-#include <ladspa.m-1/synth.h>
-#include <ladspam1.pb.h>
+#include <ladspa.m1/synth.h>
+#include <ladspa.m1/ladspam1.pb.h>
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
-#include <ladspam-jack-0/synth.h>
+#include <ladspa.m1/jack_synth.h>
 
 namespace ladspam_jack
 {

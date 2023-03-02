@@ -1,5 +1,5 @@
-#include <ladspam-jack0/instrument.h>
-#include <ladspam1.pb.h>
+#include <ladspa.m1/jack_instrument.h>
+#include <ladspa.m1/ladspam1.pb.h>
 
 #include <iostream>
 #include <fstream>
