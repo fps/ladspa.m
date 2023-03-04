@@ -11,9 +11,9 @@ JACK_CLIENT_DEPS = ${PROTO_FILES}
 
 all: library jack-clients plugins
 
-jack-clients: build/bin/ladspa.m1.jack.synth build/bin/ladspa.m1.jack.instrument 
-
 library: build/lib/libladspa.m1.so
+
+jack-clients: build/bin/ladspa.m1.jack.synth build/bin/ladspa.m1.jack.instrument 
 
 test: tests/ladspa.m.synth.test plugins.ladspa
 	LADSPA_PATH="" valgrind ${VALGRIND_FLAGS} ./tests/ladspa.m.synth.test
