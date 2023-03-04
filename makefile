@@ -3,29 +3,35 @@ CXXFLAGS ?= -O2 -g -pedantic -Wall -Werror -std=c++11 -Ibuild/include ${ADDITION
 LDFLAGS ?= `pkg-config ladspamm1 --libs` -lboost_timer -Lbuild/lib
 VALGRIND_FLAGS ?= --leak-check=full  --show-leak-kinds=all
 
-all: jack-clients plugins
+PROTO_HEADERS = proto/ladspam1.pb.h
+PROTO_SOURCES = proto/ladspam1.pb.cc
+PROTO_FILES  = ${PROTO_HEADERS} ${PROTO_SOURCES}
+
+JACK_CLIENT_DEPS = ${PROTO_FILES}
+
+all: library jack-clients plugins
 
 jack-clients: build/bin/ladspa.m1.jack.synth build/bin/ladspa.m1.jack.instrument 
+
+library: build/lib/libladspa.m1.so
 
 test: tests/ladspa.m.synth.test plugins.ladspa
 	LADSPA_PATH="" valgrind ${VALGRIND_FLAGS} ./tests/ladspa.m.synth.test
 
-build/bin/ladspa.m1.jack.synth: build build/include/ladspa.m1/ladspam1.pb.h build/lib/libladspa.m1.so ladspam-jack0/synth.cc proto/ladspam1.pb.cc jack-tools/synth.cc
+build/bin/ladspa.m1.jack.%: ${PROTO_FILES} build/lib/libladspa.m1.so ladspam-jack0/%.cc jack-tools/%.cc makefile
 	g++ ${CXXFLAGS} -o $@ ladspam-jack0/synth.cc ${LDFLAGS} build/lib/libladspa.m1.so proto/ladspam1.pb.cc jack-tools/synth.cc
 
-build/bin/ladspa.m1.jack.instrument: build build/include/ladspa.m1/ladspam1.pb.h build/lib/libladspa.m1.so ladspam-jack0/instrument.cc proto/ladspam1.pb.cc jack-tools/instrument.cc
-	g++ ${CXXFLAGS} -o $@ ladspam-jack0/instrument.cc ${LDFLAGS} build/lib/libladspa.m1.so proto/ladspam1.pb.cc jack-tools/instrument.cc
-
-build/lib/libladspa.m1.so: ladspam-jack0/synth.cc ladspam-jack0/instrument.cc
-	g++ ${CXXFLAGS} -shared -o $@ ladspam-jack0/synth.cc ladspam-jack0/instrument.cc
+build/lib/libladspa.m1.so: build ${PROTO_FILES} ladspam-jack0/synth.cc ladspam-jack0/instrument.cc
+	g++ ${CXXFLAGS} -shared -o $@ ladspam-jack0/synth.cc ladspam-jack0/instrument.cc ${PROTO_SOURCES}
 
 build/share/ladspa.m1/ladspam_pb2.py: build
 	protoc -I proto --python_out=proto ladspam1.proto
 
-build/include/ladspa.m1/ladspam1.pb.h: build
-	protoc -I proto --cpp_out=build/include/ladspa.m1 ladspam1.proto
+proto/ladspam1.pb.h: build
+	protoc -I proto --cpp_out=proto ladspam1.proto
+	install proto/ladspam1.pb.h build/include/ladspa.m1
 
-proto/ladspam.pb.cc: build/include/ladspa.m1/ladspam1.pb.h
+proto/ladspam1.pb.cc: proto/ladspam1.pb.h
 	mv -f build/include/ladspa.m1/ladspam1.pb.cc proto
 
 plugins: plugins.ladspa plugins.lv2 plugins.dssi
