@@ -7,6 +7,8 @@ PROTO_HEADERS = proto/ladspam1.pb.h
 PROTO_SOURCES = proto/ladspam1.pb.cc
 PROTO_FILES  = ${PROTO_HEADERS} ${PROTO_SOURCES}
 
+LADSPAM1_SOURCES = src/jack/synth.cc src/jack/instrument.cc ${PROTO_SOURCES}
+
 JACK_CLIENT_DEPS = ${PROTO_FILES}
 
 all: library jack-clients plugins
@@ -18,21 +20,19 @@ jack-clients: build/bin/ladspa.m1.jack.synth build/bin/ladspa.m1.jack.instrument
 test: tests/ladspa.m.synth.test plugins.ladspa
 	LADSPA_PATH="" valgrind ${VALGRIND_FLAGS} ./tests/ladspa.m.synth.test
 
-build/bin/ladspa.m1.jack.%: ${PROTO_FILES} build/lib/libladspa.m1.so ladspam-jack0/%.cc jack-clients/%.cc makefile
-	g++ ${CXXFLAGS} -o $@ ${LDFLAGS} build/lib/libladspa.m1.so proto/ladspam1.pb.cc jack-tools/synth.cc
+build/bin/ladspa.m1.jack.%: jack-clients/%.cc ${LADSPAM1_SOURCES} makefile
+	g++ ${CXXFLAGS} -o $@ ${LDFLAGS} $< ${LADSPAM1_SOURCES}
 
-build/lib/libladspa.m1.so: build ${PROTO_FILES} ladspam-jack0/synth.cc ladspam-jack0/instrument.cc makefile
-	g++ ${CXXFLAGS} -shared -o $@ ladspam-jack0/synth.cc ladspam-jack0/instrument.cc ${PROTO_SOURCES}
+build/lib/libladspa.m1.so: build ${PROTO_FILES} ${LADSPAM1_SOURCES} makefile
+	g++ ${CXXFLAGS} -shared -o $@ ${LADSPAM1_SOURCES} 
 
 build/share/ladspa.m1/ladspam_pb2.py: build
 	protoc -I proto --python_out=proto ladspam1.proto
 
 proto/ladspam1.pb.h: build
 	protoc -I proto --cpp_out=proto ladspam1.proto
-	install proto/ladspam1.pb.h build/include/ladspa.m1
 
 proto/ladspam1.pb.cc: proto/ladspam1.pb.h
-	mv -f build/include/ladspa.m1/ladspam1.pb.cc proto
 
 plugins: plugins.ladspa plugins.lv2 plugins.dssi
 
@@ -48,7 +48,6 @@ build/lib/ladspa/%.so: plugins/ladspa/%.cc
 build/lib/dssi/%.so: plugins/dssi/%.cc
 	g++ ${CXXFLAGS} -shared -o $@ -shared $<
 
-.PHONY: install 
 build: include/ladspa.m1/*.h proto/ladspam1.proto
 	install -d build/include/ladspa.m1
 	install include/ladspa.m1/*.h build/include/ladspa.m1
@@ -59,7 +58,8 @@ build: include/ladspa.m1/*.h proto/ladspam1.proto
 	install -d build/bin
 	touch build
 
-install:
-	install -d ${PREFIX}/include/ladspamm1
-	install ladspamm1/* ${PREFIX}/include/ladspamm1/
+.PHONY: install 
+
+install: all
+	install build/* ${PREFIX}/
 

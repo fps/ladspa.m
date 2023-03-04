@@ -5,7 +5,7 @@ libdir=${exec_prefix}/lib
 
 Name: ladspa.m1
 Description: The ladspam library
-Requires: ladspamm1
+Requires: ladspamm1 protobuf
 Version: 0.0.1
 Cflags: -I${includedir}/
 Libs: 
