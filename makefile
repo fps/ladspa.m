@@ -18,10 +18,10 @@ jack-clients: build/bin/ladspa.m1.jack.synth build/bin/ladspa.m1.jack.instrument
 test: tests/ladspa.m.synth.test plugins.ladspa
 	LADSPA_PATH="" valgrind ${VALGRIND_FLAGS} ./tests/ladspa.m.synth.test
 
-build/bin/ladspa.m1.jack.%: ${PROTO_FILES} build/lib/libladspa.m1.so ladspam-jack0/%.cc jack-tools/%.cc makefile
-	g++ ${CXXFLAGS} -o $@ ladspam-jack0/synth.cc ${LDFLAGS} build/lib/libladspa.m1.so proto/ladspam1.pb.cc jack-tools/synth.cc
+build/bin/ladspa.m1.jack.%: ${PROTO_FILES} build/lib/libladspa.m1.so ladspam-jack0/%.cc jack-clients/%.cc makefile
+	g++ ${CXXFLAGS} -o $@ ${LDFLAGS} build/lib/libladspa.m1.so proto/ladspam1.pb.cc jack-tools/synth.cc
 
-build/lib/libladspa.m1.so: build ${PROTO_FILES} ladspam-jack0/synth.cc ladspam-jack0/instrument.cc
+build/lib/libladspa.m1.so: build ${PROTO_FILES} ladspam-jack0/synth.cc ladspam-jack0/instrument.cc makefile
 	g++ ${CXXFLAGS} -shared -o $@ ladspam-jack0/synth.cc ladspam-jack0/instrument.cc ${PROTO_SOURCES}
 
 build/share/ladspa.m1/ladspam_pb2.py: build
@@ -49,9 +49,9 @@ build/lib/dssi/%.so: plugins/dssi/%.cc
 	g++ ${CXXFLAGS} -shared -o $@ -shared $<
 
 .PHONY: install 
-build: ladspa.m1/*.h proto/ladspam1.proto
+build: include/ladspa.m1/*.h proto/ladspam1.proto
 	install -d build/include/ladspa.m1
-	install ladspa.m1/*.h build/include/ladspa.m1
+	install include/ladspa.m1/*.h build/include/ladspa.m1
 	install -d build/share/ladspa.m1
 	install -d build/lib/ladspa
 	install -d build/lib/dssi
